@@ -17,6 +17,7 @@
       <!-- 右侧按钮 -->
       <el-form-item>
         <el-button type="warning" @click="onloadtable1()">查询</el-button>
+        <el-button type="warning" @click="uploadimag()">+</el-button>
       </el-form-item>
     </el-form>
     <!-- 表格 -->
@@ -40,6 +41,9 @@
         </el-table-column>
       </el-table>
     </div>
+    <el-dialog title="商品添加" class="upimage" :visible.sync="uploadimagehas" width="70%">
+      <uploadimage></uploadimage>
+    </el-dialog>
     <!-- 分页 -->
     <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.currentPage" :page-sizes="[10, 30, 50, 100]" :page-size="listQuery.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="listQuery.totalCount">
     </el-pagination>
@@ -48,11 +52,14 @@
 <script>
 import axios from 'axios'
 import { Message } from 'element-ui'
+import uploadimage from './components/UploadImage'
 
 export default {
+  components: { uploadimage },
   name: 'txmccx',
   data() {
     return {
+      uploadimagehas: false,
       formInline: {
         hybh: '',
         sjh: '',
@@ -141,6 +148,9 @@ export default {
     moneyData(money) { //不能用过滤器，很难受 金额
       return (money / 100).toFixed(2)
     },
+    uploadimag() {
+      this.uploadimagehas = true;
+    }
   }
 }
 

@@ -26,33 +26,27 @@
     </el-form>
     <span>主图上传</span>
     <hr>
-    <el-upload class="upload-demo" ref="upload1" action="http://192.168.1.123:8088/mall/spxx/addspxx.do" :on-preview="handlePreview" :on-remove="handleRemove" :auto-upload="false" list-type="picture" :limit="1" :data="uploadData" :before-upload="beforeloadsub" :on-exceed="exceedsub" :file-list="fileList1" :on-change="haschange">
-      <el-button slot="trigger" style="margin-right:5%;position: absolute;right: 0;" size="small" type="primary">选取主图</el-button>
-      <!-- <i class="el-icon-plus"></i> -->
-      <div slot="tip" class="el-upload__tip" style="float: left;margin: 20px 0 10px 5px;width: 99%;">
-        只能上传jpg/png文件，且不超过500kb，主图只能上传1张图片且必传。
-      </div>
-    </el-upload>
+    <el-button style="margin-right:5%;position: absolute;right: 0;" size="small" type="primary">选取主图</el-button>
+    只能上传jpg/png文件，且不超过500kb，主图只能上传1张图片且必传。
     <span>详情图上传</span>
     <hr>
-    <el-upload class="upload-demo" ref="upload2" action="http://192.168.1.123:8088/mall/spxx/addspxx.do" :on-preview="handlePreview" :auto-upload="false" list-type="picture-card" :multiple="true" :limit="6" :data="uploadData" :before-upload="beforeloadsub" :on-exceed="exceedsub" :file-list="fileList2">
-      <i class="el-icon-plus"></i>
-    </el-upload>
-    <div slot="tip" class="el-upload__tip" style="margin: 10px 0 10px 5px;">
-      <el-button style="float:right;margin:-5px 3% 0 0;" size="small" type="success" @click="submitUpload('listrow')">{{listrow.btn}}</el-button>
-      <span>只能上传jpg/png文件，且不超过500kb，最多上传6张图片。</span>
+    <div class="upimage" id="upimage" @onmouseenter="mouseImage">
+      <div class="syeimage box" v-for="item in detiltp">
+        <span class="zzc">
+          <i class="el-icon-zoom-in" style="left:35%;color: #ecececd9;"></i>
+          <i class="el-icon-delete" style="left:65%;color: #ecececd9;"></i>
+        </span>
+        <img :src="item.src" style="width:100%;height:100%;border-radius: 10px;" />
+      </div>
+      <div class="box">
+        <input id="id" type="file" @change="handleFileChange" ref="inputer" />
+        <label for="id"></label>
+        <i class="el-icon-plus"></i>
+      </div>
     </div>
+    <el-button style="float:right;margin:-5px 3% 0 0;" size="small" type="success" @click="submitUpload('listrow')">{{listrow.btn}}</el-button>
+    <span>只能上传jpg/png文件，且不超过500kb，最多上传6张图片。</span>
     <hr>
-    <!-- on-exceed文件超出个数限制时的钩子 -->
-    <!-- http-request 覆盖默认的上传行为，可以自定义上传的实现 -->
-    <!-- on-remove  文件列表移除文件时的钩子 -->
-    <!-- before-upload上传图片之前 -->
-    <!-- auto-uoload是否自动上传 -->
-    <!-- on-success上传成功 -->
-    <!-- on-preview 点击已上传的文件链接时的钩子, 可以通过 file.response 拿到服务端返回数据 -->
-    <!-- on-remove  文件列表移除文件时的钩子 -->
-    <!-- on-change  文件状态改变时的钩子，添加文件、上传成功和上传失败时都会被调用 -->
-    <!-- multiple 可以选择多个文件-->
   </div>
 </template>
 <script>
@@ -110,8 +104,6 @@ export default {
       }, 1000);
     };
     return {
-      has: false,
-      a: 1,
       formline: {
         spbh: '',
         spmc: '',
@@ -119,19 +111,21 @@ export default {
         sppp: '',
         xh: '',
       },
-
       rules2: {
         spbh: [{ validator: validspbh, trigger: 'blur' }],
         spmc: [{ validator: validspmc, trigger: 'blur' }],
         spsj: [{ validator: validspsj, trigger: 'blur' }],
         sppp: [{ validator: validsppp, trigger: 'blur' }],
       },
-      uploadData: { spbh: 0, xh: -1 },
       fileList1: [],
       fileList2: [],
       options1: [],
       options2: [],
       options3: '',
+      //图片数据
+      xh: 0, //图片序号
+      fileimg: [], //上传的图片对象
+      detiltp: [], //展示的详情图片
     };
   },
   computed: {
@@ -140,16 +134,9 @@ export default {
       return this.listrow;
     }
   },
-  // created: function() {
-  //   debugger;
-  //   this.options1 = this.listrow.options1;
-  //   console.log(this.listrow)
-  // },
-  // watch: {
-  //   'listrow.options2': function(value, oldvalue) {
-  //     console.log(value, oldvalue);
-  //   }
-  // },
+  mounted: function() {
+    upimage.style.height = "210px";
+  },
   methods: {
     getAnswer() {
       console.log(this.listrowdata);
@@ -157,19 +144,12 @@ export default {
     submitUpload(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.uploadData.remark = this.listrow.remark;
-          this.uploadData.spbh = this.listrow.spbh;
-          this.uploadData.spmc = this.listrow.spmc;
-          this.uploadData.spsj = this.listrow.spsj;
-          this.uploadData.flId = this.listrow.sppp;
-          if (!this.has) {
+          if (!this.xh) {
             this.$message({ message: '未选择主图', type: 'error' });
           } else {
-            if (this.has) {
-              this.$refs.upload1.submit();
-              this.$refs.upload2.submit();
-              this.ADSubmit();
-              this.$message({ message: '商品添加成功', type: 'success' });
+            if (!this.xh) {
+              this.subimage(); //提交表单
+              this.ADSubmit(); //返回父组件
             }
           }
         } else {
@@ -178,29 +158,12 @@ export default {
         }
       });
     },
-    handleRemove(file, fileList) { //删除事件
-      this.has = false;
-    },
-    handlePreview(file) { //点击选中图片
-      // console.log(file);
-    },
-    beforeloadsub(file) { //提交前
-      this.uploadData.xh++;
-      console.log(this.uploadData);
-      debugger;
-      this.has = true;
-    },
-    exceedsub(files, fileList) {
-      this.$message({ message: '主图只能上传1张,详情图最多上传6张', type: 'warning' });
-    },
-    haschange(file, fileList) { //状态改变
-      this.has = true;
-    },
     // 分类
     onloadtable2(val) { //品牌
       var splxData = { sppp: val };
       axios.post('http://192.168.1.123:8088/mall/spfl/searchspflbysplx.do?splx=' + splxData.sppp)
         .then((response) => {
+
           this.options2 = response.data.data;
         })
         .catch((error) => {
@@ -221,7 +184,54 @@ export default {
     },
 
     ADSubmit() {
+      this.$message({ message: '商品添加成功', type: 'success' });
       this.$emit("dialog1Changed", 0); //发送参数到父组件 事件名，参数
+    },
+    // ////////////////////////图片上传模块
+    handleFileChange(e) { //监听状态改变 
+      if (this.fileimg.length >= 3) {
+        upimage.style.height = "430px";
+      } else {
+        upimage.style.height = "210px";
+      }
+      let inputDOM = this.$refs.inputer;
+      this.fileimg.push(inputDOM.files[0]); // 通过DOM取文件数据
+      console.log(this.fileimg)
+      this.imgPreview(inputDOM.files[0]); //显示上传的图片
+    },
+    imgPreview(file) { //用base64展现图片
+      if (!file || !window.FileReader) return; // 看支持不支持FileReader
+      if (/^image/.test(file.type)) {
+        var reader = new FileReader(); // 创建一个reader
+        reader.readAsDataURL(file); // 将图片将转成 base64 格式
+        reader.onloadend = () => { // 读取成功后的回调
+          var listimage = { "src": reader.result, "name": name }
+          this.detiltp.push(listimage);
+        }
+      }
+    },
+    mouseImage(event) {
+      console.log("鼠标进入了")
+    },
+    subimage() { //提交表单
+      var formdata1 = new FormData();
+      if (this.fileimg.type) {
+        formdata1.append('file', this.fileimg);
+        formdata1.append('xh', this.xh);
+        formdata1.append('spbh', this.listrow.spbh);
+        formdata1.append('spsj', this.listrow.spsj);
+        formdata1.append('spmc', this.listrow.spmc);
+        formdata1.append('remark', this.listrow.remark);
+        formdata1.append('flId', this.listrow.flId);
+        axios.post('http://192.168.1.123:8088/mall/spxx/addspxx.do', formdata1)
+          .then(response => {
+            this.xh++;
+            debugger;
+          })
+          .catch(error => {
+            debugger;
+          })
+      }
     }
   }
 }
@@ -230,6 +240,84 @@ export default {
 <style scoped>
 hr {
   margin-top: 0;
+}
+
+
+/*自定义的图片上传模块*/
+
+.upimage {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.box {
+  position: relative;
+  float: left;
+  width: 180px;
+  height: 200px;
+  border: 1px dashed #C0CCDA;
+  border-radius: 10px;
+  background: #FBFDFF;
+}
+
+.upimage .box:hover {
+  border: 1px dashed #409EFF;
+}
+
+input {
+  position: absolute;
+  left: -9999px;
+}
+
+label {
+  /*cursor: pointer;*/
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  cursor: not-allowed;
+}
+
+div.box i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  color: #8c939d;
+}
+
+.syeimage {
+  border: 1px solid #C0CCDA;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+
+.zzc {
+  border-radius: 10px;
+  background: #0000004d;
+  z-index: 11;
+  text-align: center;
+  font-size: 20px;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  display: block;
+  position: absolute;
+}
+
+span.zzc:hover {
+  opacity: 1;
+}
+
+span.zzc i {
+  cursor: pointer;
 }
 
 </style>

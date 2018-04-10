@@ -1,42 +1,52 @@
 <template>
-  <div @click="selesplx('',1)">
-    <el-form ref="listrow" :model="listrow" status-icon :rules="rules2" size="small" label-width="80px" :inline="true">
+  <div @mouseover="Moveradd()">
+    <el-form ref="formline" :model="formline" status-icon :rules="rules2" size="small" label-width="80px" :inline="true">
       <el-form-item label="商品编号" prop="spbh">
-        <el-input v-model="listrow.spbh" style="width:215px;"></el-input>
+        <el-input v-model="formline.spbh" style="width:215px;"></el-input>
       </el-form-item>
       <el-form-item label="商品名称" prop="spmc">
-        <el-input v-model="listrow.spmc" style="width:215px;"></el-input>
+        <el-input v-model="formline.spmc" style="width:215px;"></el-input>
       </el-form-item>
       <el-form-item label="商品售价" prop="spsj">
-        <el-input v-model.number="listrow.spsj" style="width:215px;"></el-input>
+        <el-input v-model.number="formline.spsj" style="width:215px;"></el-input>
       </el-form-item>
       <el-form-item label="分类品牌" prop="sppp">
-        <el-select clearable v-model="listrow.splx" placeholder="请选择类型" @change="selesplx">
+        <el-select clearable v-model="formline.splx" placeholder="请选择类型" @change="selesplx">
           <el-option v-for="item in options1" :key="item.value" :label="item.splx" :value="item.id">
           </el-option>
         </el-select>
-        <el-select clearable v-model="listrow.sppp" placeholder="请选择品牌">
+        <el-select clearable v-model="formline.sppp" placeholder="请选择品牌">
           <el-option v-for="item in options2" :key="item.value" :label="item.sppp" :value="item.id">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="备注">
-        <el-input type="textarea" :rows=5 style="width:600px;" v-model="listrow.remark"></el-input>
+        <el-input type="textarea" :rows=5 style="width:600px;" v-model="formline.remark"></el-input>
       </el-form-item>
     </el-form>
-    <span>主图上传</span>
-    <hr>
-    <el-button style="margin-right:5%;position: absolute;right: 0;" size="small" type="primary">选取主图</el-button>
-    只能上传jpg/png文件，且不超过500kb，主图只能上传1张图片且必传。
+    <div class="ztsz">
+      <span>主图上传</span>
+      <hr>
+      <input id="zt" type="file" @change="handleFileChange('zt')" ref="inputerzt" />
+      <el-button style="margin-right:5%;position: absolute;right: 0;" size="small" type="primary">
+        <label for="zt"></label>选取主图</el-button>
+      只能上传jpg/png文件，且不超过500kb，主图只能上传1张图片且必传。
+      <div>
+        <img :src="detilzt.src" :class="{'ztimg':true,'ztimgshow':listrow.showzt}" />
+        <div class="tpmc">
+          <p>{{detilzt.name}}</p>
+        </div>
+      </div>
+    </div>
     <span>详情图上传</span>
     <hr>
-    <div class="upimage" id="upimage" @onmouseenter="mouseImage">
-      <div class="syeimage box" v-for="item in detiltp">
+    <div class="upimage" id="upimage">
+      <div class="syeimage box" v-for="(item ,index) in detiltp">
         <span class="zzc">
-          <i class="el-icon-zoom-in" style="left:35%;color: #ecececd9;"></i>
-          <i class="el-icon-delete" style="left:65%;color: #ecececd9;"></i>
+        <i class="el-icon-zoom-in" style="left:35%;color: #ecececd9;"></i>
+        <i class="el-icon-delete"  @click="deleqxt(index)" style="left:65%;color: #ecececd9;"></i>
         </span>
-        <img :src="item.src" style="width:100%;height:100%;border-radius: 10px;" />
+        <img :src="item.src" style="width:100%;height:100%;border-radius:4px;" />
       </div>
       <div class="box">
         <input id="id" type="file" @change="handleFileChange" ref="inputer" />
@@ -44,7 +54,8 @@
         <i class="el-icon-plus"></i>
       </div>
     </div>
-    <el-button style="float:right;margin:-5px 3% 0 0;" size="small" type="success" @click="submitUpload('listrow')">{{listrow.btn}}</el-button>
+    <!-- <el-button style="float:right;margin:-5px 3% 0 0;" size="small" type="info" @click="ADSubmit()">取消</el-button> -->
+    <el-button style="float:right;margin:-5px 3% 0 0;" size="small" type="success" @click="submitUpload('formline')">{{listrow.btn}}</el-button>
     <span>只能上传jpg/png文件，且不超过500kb，最多上传6张图片。</span>
     <hr>
   </div>
@@ -54,7 +65,7 @@ import { Message } from 'element-ui';
 import axios from 'axios';
 
 export default {
-  props: ['listrow'],
+  props: ['listrow', "uploadimagehas"],
   data() {
     var validspbh = (rule, value, callback) => {
       if (!value) {
@@ -88,7 +99,7 @@ export default {
         return callback(new Error('商品售价不能为空'));
       }
       setTimeout(() => {
-        if (!Number.isInteger(value)) {
+        if (!Number.isInteger(value) && typeof value !== "number") {
           callback(new Error('请输入数字值'));
         } else {
           callback();
@@ -97,7 +108,7 @@ export default {
     };
     var validsppp = (rule, value, callback) => {
       if (!value) {
-        return callback(new Error('品牌分类不能为空'));
+        return callback(new Error('商品品牌不能为空'));
       }
       setTimeout(() => {
         callback();
@@ -109,6 +120,7 @@ export default {
         spmc: '',
         remark: '',
         sppp: '',
+        splx: '',
         xh: '',
       },
       rules2: {
@@ -119,37 +131,64 @@ export default {
       },
       fileList1: [],
       fileList2: [],
-      options1: [],
-      options2: [],
-      options3: '',
+      options1: [], //分类表
+      options2: [], //品牌表
+      options3: '', //分类值
+      options4: '', //品牌值
       //图片数据
       xh: 0, //图片序号
-      fileimg: [], //上传的图片对象
+      xhadd: [], //已有的图片序号
+      fileimg: [], //上传的详情图对象
       detiltp: [], //展示的详情图片
+      detilzt: [], //展示的主图
+      zt: "", //上传的主图
+      onceover: true,
+      detilxh: [], //已存在的序号
+      upmaxxh: [], //上传的序号
     };
-  },
-  computed: {
-    listrowdata: function() {
-      console.log(this.listrow);
-      return this.listrow;
-    }
+
   },
   mounted: function() {
-    upimage.style.height = "210px";
+    upimage.style.height = "140px";
+  },
+  watch: {
+    uploadimagehas: function(data, olddata) {
+      if (data) {
+        this.onceover = data;
+      }
+    }
   },
   methods: {
-    getAnswer() {
-      console.log(this.listrowdata);
-    },
     submitUpload(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          if (!this.xh) {
-            this.$message({ message: '未选择主图', type: 'error' });
-          } else {
-            if (!this.xh) {
-              this.subimage(); //提交表单
-              this.ADSubmit(); //返回父组件
+          if (this.listrow.btn == "修改商品") {
+            this.updatespxx({}, '', maxxh);
+            var maxxh = (this.fileimg.length + 1).toString();
+            if (typeof this.zt.src !== "string") {
+              this.updatespxx(this.zt, "0", maxxh);
+            }
+            for (var i = 0; i < this.fileimg.length; i++) {
+              if (typeof this.fileimg[i].src !== "string") {
+                this.xh = 0;
+                for (var n = 0; n < this.xhadd.length; n++) { //获取不重复的xh序号
+                  var xhxthas = this.xhadd.find((item) => {
+                    return item == this.xh.toString();
+                  });
+                  if (xhxthas) {
+                    this.xh++;
+                  }
+                }
+                console.log(this.xhadd);
+                this.updatespxx(this.fileimg[i], this.xh, maxxh);
+                this.xhadd.push(this.xh.toString());
+              }
+            }
+          } else { /////////////////////////////添加商品
+            this.subimage(this.zt, '', this.xh, this.fileimg.length);
+            for (var i = 0; i < this.fileimg.length; i++) {
+              this.xh++;
+              this.subimage(this.fileimg[i], i, this.xh, this.fileimg.length);
             }
           }
         } else {
@@ -159,23 +198,25 @@ export default {
       });
     },
     // 分类
-    onloadtable2(val) { //品牌
+    onloadtable2(val, set) { //品牌
       var splxData = { sppp: val };
       axios.post('http://192.168.1.123:8088/mall/spfl/searchspflbysplx.do?splx=' + splxData.sppp)
         .then((response) => {
-
           this.options2 = response.data.data;
+          this.options4 = this.options2.find((item) => {
+            return item.sppp === this.listrow.sppp;
+          })
+          if (set == "sppp") {
+            this.formline.sppp = this.options4.id;
+          } else {
+            this.formline.sppp = this.options2[0].id;
+          }
         })
         .catch((error) => {
           Message.error("error：" + "请检查网络是否连接");
         })
     },
-
-    selesplx(value, add) { //解析类别品牌
-      if (add) {
-        this.options1 = this.listrow.options1;
-        return;
-      }
+    selesplx(value) { //解析类别品牌
       if (!value) { return; }
       this.options3 = this.listrow.options1.find((item) => {
         return item.id === value;
@@ -184,63 +225,200 @@ export default {
     },
 
     ADSubmit() {
-      this.$message({ message: '商品添加成功', type: 'success' });
+      this.onceover = true;
       this.$emit("dialog1Changed", 0); //发送参数到父组件 事件名，参数
     },
     // ////////////////////////图片上传模块
-    handleFileChange(e) { //监听状态改变 
-      if (this.fileimg.length >= 3) {
-        upimage.style.height = "430px";
+    handleFileChange(value) { //监听状态改变 
+
+      if (value == "zt") {
+        var inputDOM = this.$refs.inputerzt;
+        this.zt = inputDOM.files[0];
       } else {
-        upimage.style.height = "210px";
+        if (this.fileimg.length >= 6) { ////////////////////////////////////设置图片上传张数
+          this.$message({ message: '主图只能上传1张,详情图最多上传6张', type: 'warning' });
+          return;
+        }
+        var inputDOM = this.$refs.inputer;
+        if (inputDOM.files[0].size / 1024 > 500) { ///////////////////////////设置图片上传大小
+          this.$message({ message: '商品图片不能超过500KB', type: 'warning' });
+          return;
+        }
+        this.fileimg.push(inputDOM.files[0]); // 通过DOM取文件数
       }
-      let inputDOM = this.$refs.inputer;
-      this.fileimg.push(inputDOM.files[0]); // 通过DOM取文件数据
-      console.log(this.fileimg)
-      this.imgPreview(inputDOM.files[0]); //显示上传的图片
+      if (inputDOM.files[0].size / 1024 > 500) { ///////////////////////////设置图片上传大小
+        this.$message({ message: '商品图片不能超过500KB', type: 'warning' });
+        return;
+      }
+      this.imgPreview(inputDOM.files[0], value); //显示上传的图片
     },
-    imgPreview(file) { //用base64展现图片
+    imgPreview(file, value) { //用base64展现图片
       if (!file || !window.FileReader) return; // 看支持不支持FileReader
       if (/^image/.test(file.type)) {
         var reader = new FileReader(); // 创建一个reader
         reader.readAsDataURL(file); // 将图片将转成 base64 格式
         reader.onloadend = () => { // 读取成功后的回调
-          var listimage = { "src": reader.result, "name": name }
-          this.detiltp.push(listimage);
+          var listimage = { "src": reader.result, "name": file.name }
+          if (value == "zt") {
+            this.listrow.showzt = true;
+            this.detilzt = listimage;
+          } else {
+            this.detiltp.push(listimage);
+
+            this.upmaxxh = ["0"]; //初始化上传的数组序号
+            for (var n = 0; n < this.detiltp.length; n++) {
+              var addxhup = this.detiltp[n].xh;
+              this.upmaxxh.push(addxhup);
+            }
+            for (var i = 0; i < this.upmaxxh.length; i++) { //获取不重复的xh序号
+              var xhxthas = this.upmaxxh.find((item) => {
+                return item == i.toString();
+              });
+              if (!xhxthas) {
+                this.detiltp[this.detiltp.length - 1].xh = i.toString();
+                this.upmaxxh[this.upmaxxh.length - 1] = i.toString();
+                console.log(this.upmaxxh);
+                return;
+              }
+            }
+          }
         }
       }
     },
-    mouseImage(event) {
-      console.log("鼠标进入了")
-    },
-    subimage() { //提交表单
-      var formdata1 = new FormData();
-      if (this.fileimg.type) {
-        formdata1.append('file', this.fileimg);
-        formdata1.append('xh', this.xh);
-        formdata1.append('spbh', this.listrow.spbh);
-        formdata1.append('spsj', this.listrow.spsj);
-        formdata1.append('spmc', this.listrow.spmc);
-        formdata1.append('remark', this.listrow.remark);
-        formdata1.append('flId', this.listrow.flId);
-        axios.post('http://192.168.1.123:8088/mall/spxx/addspxx.do', formdata1)
-          .then(response => {
-            this.xh++;
-            debugger;
-          })
-          .catch(error => {
-            debugger;
-          })
+    deleqxt(index) { //////////////////////删除元素
+      if (this.listrow.btn = "修改商品") {
+        this.fileimg.splice(index, 1);
+        this.detiltp.splice(index, 1);
+        this.xhadd.splice(index + 1, 1);
+        // console.log(this.detiltp);
+        // console.log(this.xhadd[index]);
+        // console.log(this.xhadd);
+      } else {
+        this.fileimg.splice(index, 1);
+        this.detiltp.splice(index, 1);
       }
-    }
+    },
+    subimage(file, index, xh, length) { //提交表单
+      console.log(this.formline);
+      console.log(this.fileimg);
+      var formdata1 = new FormData();
+      formdata1.append('file', file);
+      formdata1.append('xh', xh);
+      formdata1.append('spbh', this.formline.spbh);
+      formdata1.append('spsj', this.formline.spsj);
+      formdata1.append('spmc', this.formline.spmc);
+      formdata1.append('remark', this.formline.remark);
+      formdata1.append('flId', this.formline.sppp);
+      axios.post('http://192.168.1.123:8088/mall/spxx/addspxx.do', formdata1)
+        .then(response => {
+          // debugger;
+          if (response.code == "-1") {
+            this.$message({ message: '添加失败：商品编号已添加', type: 'warning' });
+            return;
+          }
+          if (xh == length || length == 0) {
+            this.ADSubmit(); //返回父组件
+            this.$message({ message: '商品添加成功', type: 'success' });
+          }
+        })
+        .catch(error => {
+          this.$message({ message: '商品添加失败添加失败', type: 'error' });
+          this.ADSubmit(); //返回父组件
+          console.log(error);
+        })
+    },
+    Moveradd() { ////////////////////////进入初始化
+      if (this.onceover) {
+        this.maxtpsl = this.listrow.xqtpurl.length + 1;
+        this.formline.spbh = this.listrow.spbh; //商品编号
+        this.formline.remark = this.listrow.remark; //商品备注
+        this.formline.spmc = this.listrow.spmc; //商品名称
+        this.formline.spsj = (parseFloat(this.listrow.spsj) * 100).toFixed(); //商品售价
+        this.options1 = this.listrow.options1; //商品类别1
+        this.fileimg = []; //商品详情图初始化
+        this.detilzt = []; //商品详情图初始化
+        this.detiltp = []; //商品主图初始化
+        this.zt = []; //商品主图初始化
+        this.xh = 0; //序号初始化
+        if (this.listrow.splx) { //如果是修改则录入参数
+          this.options3 = this.listrow.options1.find((item) => {
+            return item.splx === this.listrow.splx;
+          });
+          this.formline.splx = this.options3.id;
+          this.onloadtable2(this.listrow.splx, "sppp"); //商品品牌
+          this.xhadd = ["0"];
+          for (var i = 0; i < this.listrow.xqtpurl.length; i++) { //添加展示的详情图
+            var src = this.listrow.xqtpurl[i].split(",")[0];
+            var xh = this.listrow.xqtpurl[i].split(",")[1];
+            var itemxqimg = { "src": "http://192.168.1.123:8088" + src, "xh": xh };
+            this.detiltp.push(itemxqimg);
+            this.xhadd.push(xh);
+            this.fileimg.push(itemxqimg); //添加上传的详情图
+          }
+          this.detilzt.src = this.listrow.tpurl; //展示的主图
+          this.detilzt.name = this.listrow.tpmc; //展示的主图名称
+          this.zt = this.detilzt; //添加上传的主图
+        } else { //如果是添加则更新
+          this.options2 = [];
+          this.formline.sppp = "";
+          this.formline.splx = "";
+        }
+        this.onceover = false;
+      }
+    },
+    updatespxx(file, xh, maxxh) { //修改商品
+      // console.log(this.detiltp);
+      // console.log(this.detilzt);
+      // console.log(this.zt);
+      // console.log(this.fileimg);
+      // console.log(xh);
+      // console.log(typeof this.formline.spsj);
+      // console.log(this.formline.spsj);
+      if (this.upmaxxh.length = 0) {
+        var upmaxxh = this.upmaxxh.join(",");
+      } else {
+
+        var upmaxxh = this.xhadd.join(",")
+      }
+      if (typeof this.zt.src !== "string") {
+        upmaxxh = upmaxxh.replace("0,", "");
+      }
+      // console.log(upmaxxh)
+      var formdata1 = new FormData();
+      formdata1.append('file', file);
+      formdata1.append('xh', xh);
+      formdata1.append('spbh', this.formline.spbh);
+      formdata1.append('spsj', this.formline.spsj);
+      formdata1.append('spmc', this.formline.spmc);
+      formdata1.append('remark', this.formline.remark);
+      formdata1.append('flId', this.formline.sppp);
+      formdata1.append('maxXh', upmaxxh);
+      axios.post('http://192.168.1.123:8088/mall/spxx/updatespxx.do', formdata1)
+        .then(response => {
+          // debugger;
+          if (xh == '') {
+            this.$message({ message: '商品修改成功', type: 'success' });
+          }
+          if (this.xhadd.length == this.detiltp.length + 1) {
+            this.$message({ message: '商品修改成功', type: 'success' });
+            this.ADSubmit(); //返回父组件   
+          }
+        })
+        .catch(error => {
+          this.$message({ message: '商品修改失败', type: 'error' });
+          this.ADSubmit(); //返回父组件
+          console.log(error);
+        })
+    },
   }
 }
 
 </script>
 <style scoped>
 hr {
-  margin-top: 0;
+  margin-top: 5px;
 }
+
 
 
 /*自定义的图片上传模块*/
@@ -256,10 +434,10 @@ hr {
 .box {
   position: relative;
   float: left;
-  width: 180px;
-  height: 200px;
+  width: 100px;
+  height: 120px;
   border: 1px dashed #C0CCDA;
-  border-radius: 10px;
+  border-radius: 5px;
   background: #FBFDFF;
 }
 
@@ -273,14 +451,14 @@ input {
 }
 
 label {
-  /*cursor: pointer;*/
+  cursor: pointer;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 10;
-  cursor: not-allowed;
+  /*cursor: not-allowed;*/
 }
 
 div.box i {
@@ -318,6 +496,33 @@ span.zzc:hover {
 
 span.zzc i {
   cursor: pointer;
+}
+
+.ztimg {
+  position: absolute;
+  transition: opacity 2s, top 1s;
+  opacity: 0;
+  top: 0px;
+  width: 100px;
+  height: 100px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+}
+
+div img.ztimgshow {
+  opacity: 1;
+  top: 65px;
+}
+
+.ztsz {
+  position: relative;
+  height: 180px;
+}
+
+div.tpmc {
+  position: relative;
+  top: 40px;
+  left: 150px;
 }
 
 </style>

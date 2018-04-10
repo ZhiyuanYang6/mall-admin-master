@@ -12,7 +12,14 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-input v-model="formInline.yhkh" style="width: 120px;" placeholder="品牌"></el-input>
+        <el-select clearable v-model="formInline.splx" placeholder="请选择类型" @change="selesplx">
+          <el-option v-for="item in options1" :key="item.value" :label="item.splx" :value="item.id">
+          </el-option>
+        </el-select>
+        <el-select clearable v-model="formInline.sppp" placeholder="请选择品牌">
+          <el-option v-for="item in options2" :key="item.value" :label="item.sppp" :value="item.id">
+          </el-option>
+        </el-select>
       </el-form-item>
       <!-- 右侧按钮 -->
       <el-form-item>
@@ -78,6 +85,8 @@ export default {
       }],
       orderBy: '',
       loading: false,
+      options1: [],
+      options2: []
     }
 
   },
@@ -104,7 +113,7 @@ export default {
     },
     onloadtable1() { //查询
       this.timeFormat();
-      var txmxcxData = {
+      var searchckxqData = {
         orderBy: this.orderBy,
         pageNum: this.listQuery.pageNum,
         pageSize: this.listQuery.pageSize,
@@ -116,7 +125,7 @@ export default {
         txzt: this.formInline.txzt,
       }
       console.log(txmxcxData);
-      axios.post('http://192.168.1.127:8082/card/withdrawDetail/withdrawDetailQueryPageList.do', txmxcxData)
+      axios.post('hhttp://192.168.1.123:8088/mall/ckxq/searchckxq.do', searchckxqData)
         .then(response => {
           this.loading = false;
           for (var i = 0; i < response.data.list.length; i++) {
@@ -141,6 +150,19 @@ export default {
     },
     moneyData(money) { //不能用过滤器，很难受 金额
       return (money / 100).toFixed(2)
+    },
+    selesplx(value, value2) { //解析类别品牌
+      if (!value) { return; }
+      if (value2 == "rain") {
+        var rain = this.options2.find((item) => {
+          return item.id === value;
+        });
+        return rain.sppp;
+      }
+      this.options3 = this.options1.find((item) => {
+        return item.id === value;
+      });
+      this.onloadtable2(this.options3.splx);
     },
   }
 }

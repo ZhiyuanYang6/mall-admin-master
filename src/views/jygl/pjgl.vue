@@ -57,9 +57,7 @@ export default {
       opttxzt: [
         { value: '0', label: '好评' },
         { value: '1', label: '中评' },
-        { value: '2', label: '差评' },
-        { value: '3', label: '中评改好评' },
-        { value: '4', label: '差评改好评' }
+        { value: '2', label: '差评' }
       ],
       listQuery: {
         pageSize: 10, //默认每页的数据量

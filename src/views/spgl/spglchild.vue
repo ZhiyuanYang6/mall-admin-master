@@ -6,14 +6,7 @@
         <el-input v-model="formInline.hybh" style="width: 200px;" placeholder="编号、名称"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-select clearable v-model="formInline.splx" placeholder="请选择类型" @change="selesplx">
-          <el-option v-for="item in options1" :key="item.value" :label="item.splx" :value="item.id">
-          </el-option>
-        </el-select>
-        <el-select clearable v-model="formInline.sppp" placeholder="请选择品牌">
-          <el-option v-for="item in options2" :key="item.value" :label="item.sppp" :value="item.id">
-          </el-option>
-        </el-select>
+        <el-cascader placeholder="请选择品牌类型" ref="options1" :options="options1" v-model="formInline.flid" :show-all-levels="false" clearable> </el-cascader>
       </el-form-item>
       <el-form-item>
         <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
@@ -24,8 +17,7 @@
       <!-- 右侧按钮 -->
       <el-form-item>
         <el-button type="warning" @click="onloadtable1()">查询</el-button>
-        <!-- <el-button type="warning" @click="uploadimag('','add')">+</el-button> -->
-        <el-button type="warning" @click="uploadimag('','add')">自定义的商品添加</el-button>
+        <el-button type="warning" @click="uploadimag('','add')">添加商品</el-button>
       </el-form-item>
     </el-form>
     <!-- 表格 -->
@@ -54,7 +46,7 @@
         </el-table-column>
       </el-table>
     </div>
-    <el-dialog :title="row.title" class="upimage" :visible.sync="uploadimagehas" width="60%" style="padding-bottom: 5%;">
+    <el-dialog :title="row.title" class="upimage" :visible.sync="uploadimagehas" width="57%" style="padding-bottom: 5%;">
       <uploadimage :listrow="row" :uploadimagehas="uploadimagehas" @dialog1Changed="childchanged($event)"></uploadimage>
     </el-dialog>
     <!-- 分页 -->
@@ -63,14 +55,15 @@
   </div>
 </template>
 <script>
-import axios from 'axios'
+import request from '@/utils/request'
+
 import { Message } from 'element-ui'
 // import uploadimage from './components/UploadImage'
-import uploadimage from './components/UploadImage3'
+import uploadimage from './components/UploadImage'
 
 export default {
   components: { uploadimage },
-  name: 'txmccx',
+  name: 'spglchild',
   data() {
     return {
       uploadimagehas: false,
@@ -80,13 +73,10 @@ export default {
         sjh: '',
         yhkh: '',
         sj: '',
-        splx: '',
-        sppp: '',
+        flid: [],
         radio: ''
       },
       options1: [],
-      options2: [],
-      options3: '',
       listQuery: {
         pageSize: 10, //默认每页的数据量
         currentPage: 1, //当前页码
@@ -126,29 +116,24 @@ export default {
         orderBy: this.orderBy,
         pageNum: this.listQuery.pageNum,
         pageSize: this.listQuery.pageSize,
-        sppp: '',
+        flid: this.formInline.flid[1] ? this.formInline.flid[1] : '',
         status: this.formInline.radio,
         bhmc: this.formInline.hybh
       };
-      if (this.formInline.sppp) {
-        spglCData.sppp = this.selesplx(this.formInline.sppp, "rain");
-      }
-      // console.log(spglCData);
-      axios.post('http://192.168.1.123:8088/mall/spxx/searchspxx.do', spglCData)
-        .then(response => {
-          console.log(response.data);
+      request({ url: 'mall/spxx/searchspxx.do', method: 'post', data: spglCData }).then(response => {
           this.loading = false;
-          for (var i = 0; i < response.data.list.length; i++) {
-            response.data.list[i].spsj = this.moneyData(response.data.list[i].spsj);
-            response.data.list[i].tpurl = this.imgUrl(response.data.list[i].tpurl);
+          for (var i = 0; i < response.list.length; i++) {
+            response.list[i].spsj = this.moneyData(response.list[i].spsj);
+            response.list[i].tpurl = this.imgUrl(response.list[i].tpurl);
           }
-          this.tableData = response.data.list;
-          this.listQuery.totalCount = response.data.total;
+          this.tableData = response.list;
+          this.listQuery.totalCount = response.total;
         })
         .catch(error => {
           Message.error("error：" + "请检查网络是否连接");
         })
     },
+
     moneyData(money) { //不能用过滤器，很难受 金额
       return (parseFloat(money) / 100).toFixed(2);
     },
@@ -163,18 +148,12 @@ export default {
         this.row.options1 = this.options1;
         this.row.remark = "";
         this.row.xqtpurl = [];
-        this.row.tpurl = [];
+        this.row.tpurl = '';
         this.row.showzt = false;
-        this.row.sppp = '';
-        this.row.splx = '';
-        axios.post('http://192.168.1.123:8088/mall/spxx/getmaxspbh.do')
-          .then(response => {
-            this.row.spbh = response.data.date;
-            // console.log(this.row);
-          })
-          .catch(error => {
-            Message.error("error：" + "请检查网络是否连接");
-          })
+        this.row.flid = [];
+        request({ url: 'mall/spxx/getmaxspbh.do', method: 'post', data: {} }).then(response => {
+          this.row.spbh = response.list;
+        })
       } else {
         this.row = row;
         this.row.showzt = true;
@@ -187,35 +166,11 @@ export default {
       this.uploadimagehas = true;
     },
     onloadtable2(val) { //加载类别品牌
-      if (val) { //第二次加载
-        var splxData = { splx: val };
-      } else { //第一次加载类别
-        var splxData = { splx: "" };
-      }
-      axios.post('http://192.168.1.123:8088/mall/spfl/searchspflbysplx.do?splx=' + splxData.splx)
-        .then((response) => {
-          if (!val) {
-            this.options1 = response.data.data;
-          } else {
-            this.options2 = response.data.data;
-          }
-        })
-        .catch((error) => {
-          Message.error("error：" + "请检查网络是否连接");
-        })
-    },
-    selesplx(value, value2) { //解析类别品牌
-      if (!value) { return; }
-      if (value2 == "rain") {
-        var rain = this.options2.find((item) => {
-          return item.id === value;
-        });
-        return rain.sppp;
-      }
-      this.options3 = this.options1.find((item) => {
-        return item.id === value;
-      });
-      this.onloadtable2(this.options3.splx);
+      request({ url: 'mall/spfl/searchspflbysplx.do', method: 'post', data: {} }).then(response => {
+        debugger;
+        this.$store.dispatch('getTrees', response.data);
+        this.options1 = response.data.treedata; //添加树结构
+      })
     },
 
     childchanged(childdata) { //接收子组件参数
@@ -224,12 +179,16 @@ export default {
       this.onloadtable1();
     },
     delclick(row, has, zt) { //删除商品
+      var spxx = {
+        spbh: row.spbh,
+        status: has
+      }
       this.$confirm('是否' + zt + '该条商品信息, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        axios.post('http://192.168.1.123:8088/mall/spxx/delspxx.do?spbh=' + row.spbh + "&status=" + has).then((response) => {
+        request({ url: 'mall/spxx/delspxx.do', method: 'post', data: spxx }).then(response => {
             this.$message({ type: 'success', message: zt + '成功!' });
             this.onloadtable1(); //刷新数据
           })

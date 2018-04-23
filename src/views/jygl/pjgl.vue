@@ -7,13 +7,13 @@
         </el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-select v-model="formInline.sele1" filterable placeholder="评价" style="width:150px;">
+        <el-select v-model="formInline.pjdj" filterable placeholder="评价" style="width:150px;">
           <el-option v-for="item in opttxzt" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-input v-model="formInline.hybh" style="width: 200px;" placeholder="会员名称/电话"></el-input>
+        <el-input v-model="formInline.hymc" style="width: 200px;" placeholder="会员名称/电话"></el-input>
       </el-form-item>
       <!-- 右侧按钮 -->
       <el-form-item>
@@ -25,12 +25,26 @@
       <!-- @sort-change="sortChange" -->
       <el-table :data="tableData" @sort-change="sortChange" v-loading="loading" style="width:100%" border>
         <el-table-column prop="ddh" label="订单号" align="center"> </el-table-column>
-        <el-table-column prop="name" label="商品名称" align="center"> </el-table-column>
-        <el-table-column prop="phone" label="买家评价" align="center"> </el-table-column>
-        <el-table-column prop="title" label="联系方式" align="center"> </el-table-column>
-        <el-table-column prop="txzt" label="评价内容" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="买家" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="最后修改时间" align="center"> </el-table-column>
+        <el-table-column prop="spmc" label="商品名称" align="center"> </el-table-column>
+        <el-table-column prop="pjdj" label="买家评价" align="center">
+          <template slot-scope="scope">
+            <span v-if="scope.row.pjdj=='0'">
+              好评
+            </span>
+            <span v-if="scope.row.pjdj=='1'">
+              中评
+            </span>
+            <span v-if="scope.row.pjdj=='2'">
+              差评
+            </span>
+            <span v-else>
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="loginName" label="联系方式" align="center"> </el-table-column>
+        <el-table-column prop="pjnr" label="评价内容" align="center"> </el-table-column>
+        <el-table-column prop="loginName" label="买家" align="center"> </el-table-column>
+        <el-table-column prop="modifyTime" label="最后修改时间" align="center"> </el-table-column>
       </el-table>
     </div>
     <!-- 分页 -->
@@ -39,6 +53,7 @@
   </div>
 </template>
 <script>
+import request from '@/utils/request'
 import axios from 'axios'
 
 import { Message } from 'element-ui'
@@ -48,11 +63,11 @@ export default {
   data() {
     return {
       formInline: {
-        hybh: '',
+        hymc: '',
         sjh: '',
         yhkh: '',
         sj: '',
-        sele1: '',
+        pjdj: '',
       },
       opttxzt: [
         { value: '0', label: '好评' },
@@ -75,16 +90,16 @@ export default {
   },
   created: function() {
     this.$store.dispatch('getNewDate', this.formInline);
-    // this.onloadtable1();
+    this.onloadtable1();
   },
   methods: {
     handleSizeChange(val) {
       this.listQuery.pageSize = val; //修改每页数据量
-      // this.onloadtable1();
+      this.onloadtable1();
     },
     handleCurrentChange(val) { //跳转第几页
       this.listQuery.pageNum = val;
-      // this.onloadtable1();
+      this.onloadtable1();
     },
     sortChange(column) { //服务器端排序
       if (column.order == "ascending") {
@@ -92,7 +107,7 @@ export default {
       } else if (column.order == "descending") {
         this.orderBy = column.prop + " desc";
       }
-      // this.onloadtable1();
+      this.onloadtable1();
     },
     onloadtable1() { //查询
       this.timeFormat();
@@ -100,22 +115,18 @@ export default {
         orderBy: this.orderBy,
         pageNum: this.listQuery.pageNum,
         pageSize: this.listQuery.pageSize,
-        hybh: this.formInline.hybh,
-        sjh: this.formInline.sjh,
-        yhkh: this.formInline.yhkh,
-        startTime: this.formInline.startTime,
-        endTime: this.formInline.endTime,
-        txzt: this.formInline.txzt,
+        pjdj: this.formInline.yhkh,
+        startDate: this.formInline.startTime,
+        endDate: this.formInline.endTime,
+        memberPhone: this.formInline.txzt,
+        loginName: this.formInline.hymc
       }
       console.log(txmxcxData);
-      axios.post('http://192.168.1.127:8082/card/withdrawDetail/withdrawDetailQueryPageList.do', txmxcxData)
+      request({ url: 'mall/spxq/searchspxq.do', method: 'post', data: txmxcxData })
         .then(response => {
           this.loading = false;
-          for (var i = 0; i < response.data.list.length; i++) {
-            response.data.list[i].je = this.moneyData(response.data.list[i].je);
-          }
-          this.tableData = response.data.list;
-          this.listQuery.totalCount = response.data.total;
+          this.tableData = response.list;
+          this.listQuery.totalCount = response.total;
           console.log(response.data);
         })
         .catch(error => {

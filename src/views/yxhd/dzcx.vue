@@ -11,8 +11,8 @@
         <el-button type="warning" @click="onloadtable1()">添加</el-button>
       </el-form-item>
       <el-form-item>
-        <el-radio-group v-model="formInline.radio" size="mini">
-          <el-radio-button label="0">显示历史</el-radio-button>
+        <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
+          <el-radio-button label="">显示历史</el-radio-button>
           <el-radio-button label="1">关闭历史</el-radio-button>
         </el-radio-group>
       </el-form-item>
@@ -23,19 +23,20 @@
       <el-table :data="tableData" @sort-change="sortChange" v-loading="loading" style="width:100%" border>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" width="50" label="序号" align="center"> </el-table-column>
-        <el-table-column prop="name" label="商品编号" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="标题" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="售价" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="折后价" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="折扣率" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="开始时间" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="结束时间" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="状态" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="活动图片" align="center"> </el-table-column>
+        <el-table-column prop="spbh" label="商品编号" align="center"> </el-table-column>
+        <el-table-column prop="spmc" label="标题" align="center"> </el-table-column>
+        <el-table-column prop="spsj" label="售价" align="center"> </el-table-column>
+        <el-table-column prop="zhj" label="折后价" align="center"> </el-table-column>
+        <el-table-column prop="zk" label="折扣率" align="center"> </el-table-column>
+        <el-table-column prop="sxsj" label="开始时间" align="center"> </el-table-column>
+        <el-table-column prop="xxsj" label="结束时间" align="center"> </el-table-column>
+        <el-table-column prop="zt" label="状态" align="center"> </el-table-column>
+        <el-table-column prop="bz" label="说明" align="center"> </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <el-button type="text" size="mini">修改</el-button>
-            <el-button type="text" size="mini">删除</el-button>
+            <el-button type="text" size="mini" @click="uploadimag(scope.row)">修改</el-button>
+            <el-button type="text" size="mini" v-if="scope.row.zt=='0'" @click="delclick(scope.row,1, '恢复')">恢复</el-button>
+            <el-button type="text" size="mini" v-else @click="delclick(scope.row,0,'删除')">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -46,6 +47,7 @@
   </div>
 </template>
 <script>
+import request from '@/utils/request'
 import axios from 'axios'
 import { Message } from 'element-ui'
 
@@ -59,7 +61,7 @@ export default {
         yhkh: '',
         sj: '',
         sele1: '',
-        radio: '0',
+        radio: '',
       },
       opttxzt: [
         { value: '0', label: '类型1' },
@@ -82,17 +84,16 @@ export default {
 
   },
   created: function() {
-    this.$store.dispatch('getNewDate', this.formInline);
-    // this.onloadtable1();
+    this.onloadtable1();
   },
   methods: {
     handleSizeChange(val) {
       this.listQuery.pageSize = val; //修改每页数据量
-      // this.onloadtable1();
+      this.onloadtable1();
     },
     handleCurrentChange(val) { //跳转第几页
       this.listQuery.pageNum = val;
-      // this.onloadtable1();
+      this.onloadtable1();
     },
     sortChange(column) { //服务器端排序
       if (column.order == "ascending") {
@@ -100,49 +101,62 @@ export default {
       } else if (column.order == "descending") {
         this.orderBy = column.prop + " desc";
       }
-      // this.onloadtable1();
+      this.onloadtable1();
     },
     onloadtable1() { //查询
       console.log(this.formInline.radio)
-      this.timeFormat();
       var txmxcxData = {
         orderBy: this.orderBy,
         pageNum: this.listQuery.pageNum,
         pageSize: this.listQuery.pageSize,
-        hybh: this.formInline.hybh,
-        sjh: this.formInline.sjh,
-        yhkh: this.formInline.yhkh,
-        startTime: this.formInline.startTime,
-        endTime: this.formInline.endTime,
-        txzt: this.formInline.txzt,
+        zt: this.formInline.radio,
+        bhmc: this.formInline.hybh
       }
       console.log(txmxcxData);
-      // axios.post('http://192.168.1.127:8082/card/withdrawDetail/withdrawDetailQueryPageList.do', txmxcxData)
-      //   .then(response => {
-      //     this.loading = false;
-      //     for (var i = 0; i < response.data.list.length; i++) {
-      //       response.data.list[i].je = this.moneyData(response.data.list[i].je);
-      //     }
-      //     this.tableData = response.data.list;
-      //     this.listQuery.totalCount = response.data.total;
-      //     console.log(response.data);
-      //   })
-      //   .catch(error => {
-      //     Message.error("error：" + "请检查网络是否连接");
-      //   })
+      request({ url: 'mall/yxhd_zk/searchzk.do', method: 'post', data: txmxcxData })
+        .then(response => {
+          console.log(response.data);
+          this.loading = false;
+          for (var i = 0; i < response.list.length; i++) {
+            if (response.list[i].zhj != null) {
+              response.list[i].zhj = this.moneyData(response.list[i].zhj);
+            }
+            if (response.list[i].spsj != null) {
+              response.list[i].spsj = this.moneyData(response.list[i].spsj);
+            }
+          }
+          this.tableData = response.list;
+          this.listQuery.totalCount = response.total;
+        })
+        .catch(error => {
+          Message.error("error：" + "请检查网络是否连接");
+        })
     },
-    timeFormat() { //时间格式化yy-mm-dd hh:mm:ss
-      if (this.formInline.sj) {
-        this.$store.dispatch('timeFormat', this.formInline);
-      } else {
-        this.$store.dispatch('getNewDate', this.formInline);
-        this.formInline.startTime = "";
-        this.formInline.endTime = "";
-      }
-    },
+
     moneyData(money) { //不能用过滤器，很难受 金额
       return (money / 100).toFixed(2)
     },
+    delclick(row, has, zt) { //删除商品
+      this.$confirm('是否' + zt + '该条商品打折信息, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        var delparam = {
+          id: row.id,
+          zt: has
+        }
+        request({ url: 'mall/yxhd_zk/updatezk.do', method: 'post', data: txmxcxData }).then((response) => {
+            this.$message({ type: 'success', message: zt + '成功!' });
+            this.onloadtable1(); //刷新数据
+          })
+          .catch((error) => {
+            Message.error("error：" + "请检查网络是否连接");
+          })
+      }).catch(() => {
+        this.$message({ type: 'info', message: '已取消' + zt });
+      });
+    }
   }
 }
 

@@ -1,28 +1,30 @@
 import request from '@/utils/request'
 
-export function login(username, password) {
-  console.log(username);
+export function LoginByUsername(username, password) {
+  const data = {
+    username,
+    password
+  }
   return request({
-    url: '/user/login',
+    url: 'mall/login.do',
     method: 'post',
-    data: {
-      username,
-      password,
-    }
-  })
-}
-
-export function GetUserInfo(token) {
-  return request({
-    url: '/user/info',
-    method: 'get',
-    params: { token }
-  })
+    data
+  });
 }
 
 export function logout() {
+  const data = {}
   return request({
-    url: '/user/logout',
+    url: 'mall/logout.do',
     method: 'post',
+    data
   })
 }
+
+// export function getUserInfo(token) {
+//   return request({
+//     url: '/user/info',
+//     method: 'get',
+//     params: { token }
+//   })
+// }

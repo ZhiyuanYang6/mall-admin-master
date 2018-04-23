@@ -7,7 +7,7 @@
         </el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-select v-model="formInline.sele1" filterable placeholder="类型" style="width:150px;">
+        <el-select v-model="formInline.pjdj" filterable placeholder="类型" style="width:150px;">
           <el-option v-for="item in opttxzt" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
@@ -31,15 +31,29 @@
       <!-- @sort-change="sortChange" -->
       <el-table :data="tableData" @sort-change="sortChange" v-loading="loading" style="width:100%" border>
         <el-table-column prop="ddh" label="订单号" align="center"> </el-table-column>
-        <el-table-column prop="name" label="宝贝标题" align="center"> </el-table-column>
-        <el-table-column prop="name" label="买家" align="center"> </el-table-column>
-        <el-table-column prop="phone" label="联系方式" align="center"> </el-table-column>
-        <el-table-column prop="title" label="类型" align="center"> </el-table-column>
-        <el-table-column prop="txzt" label="原因" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="退款金额" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="状态" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="备注" align="center"> </el-table-column>
-        <el-table-column prop="bankCard" label="客服" align="center"> </el-table-column>
+        <el-table-column prop="spmc" label="宝贝标题" align="center"> </el-table-column>
+        <el-table-column prop="loginName" label="买家" align="center"> </el-table-column>
+        <el-table-column prop="loginName" label="联系方式" align="center"> </el-table-column>
+        <el-table-column prop="pjdj" label="类型" align="center">
+          <template slot-scope="scope">
+            <span v-if="scope.row.pjdj=='0'">
+              好评
+            </span>
+            <span v-if="scope.row.pjdj=='1'">
+              中评
+            </span>
+            <span v-if="scope.row.pjdj=='2'">
+              差评
+            </span>
+            <span v-else>
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="tkyy" label="原因" align="center"> </el-table-column>
+        <el-table-column prop="tkje" label="退款金额" align="center"> </el-table-column>
+        <el-table-column prop="zt" label="状态" align="center"> </el-table-column>
+        <el-table-column prop="bz" label="备注" align="center"> </el-table-column>
+        <el-table-column prop="shrid" label="客服" align="center"> </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
             <el-button type="text" size="mini" @click="dialog1=true">退货</el-button>
@@ -54,18 +68,19 @@
     <el-dialog :visible.sync="dialog1" title="订单详情" center>
       <span>订单详情</span>
       <span slot="footer" class="dialog-footer">
-    	 	<el-button type="primary" @click="dialog2=true">退货</el-button>
-    	 </span>
+        <el-button type="primary" @click="dialog2=true">退货</el-button>
+       </span>
     </el-dialog>
     <el-dialog :visible.sync="dialog2" title="换货信息" center>
       <span>换货信息</span>
       <span slot="footer" class="dialog-footer">
-    	 	<el-button type="primary" @click="Returns()">换货</el-button>
-    	 </span>
+        <el-button type="primary" @click="Returns()">换货</el-button>
+       </span>
     </el-dialog>
   </div>
 </template>
 <script>
+import request from '@/utils/request'
 import axios from 'axios'
 
 import { Message } from 'element-ui'
@@ -81,7 +96,7 @@ export default {
         sjh: '',
         yhkh: '',
         sj: '',
-        sele1: '',
+        pjdj: '',
         radio: '0'
       },
       opttxzt: [
@@ -107,7 +122,7 @@ export default {
   },
   created: function() {
     this.$store.dispatch('getNewDate', this.formInline);
-    // this.onloadtable1();
+    this.onloadtable1();
   },
   methods: {
     Returns() {
@@ -115,11 +130,11 @@ export default {
     },
     handleSizeChange(val) {
       this.listQuery.pageSize = val; //修改每页数据量
-      // this.onloadtable1();
+      this.onloadtable1();
     },
     handleCurrentChange(val) { //跳转第几页
       this.listQuery.pageNum = val;
-      // this.onloadtable1();
+      this.onloadtable1();
     },
     sortChange(column) { //服务器端排序
       if (column.order == "ascending") {
@@ -127,7 +142,7 @@ export default {
       } else if (column.order == "descending") {
         this.orderBy = column.prop + " desc";
       }
-      // this.onloadtable1();
+      this.onloadtable1();
     },
     onloadtable1() { //查询
       this.timeFormat();
@@ -136,21 +151,16 @@ export default {
         pageNum: this.listQuery.pageNum,
         pageSize: this.listQuery.pageSize,
         hybh: this.formInline.hybh,
-        sjh: this.formInline.sjh,
-        yhkh: this.formInline.yhkh,
         startTime: this.formInline.startTime,
         endTime: this.formInline.endTime,
-        txzt: this.formInline.txzt,
+        pjdj: this.formInline.pjdj,
       }
       console.log(txmxcxData);
-      axios.post('http://192.168.1.127:8082/card/withdrawDetail/withdrawDetailQueryPageList.do', txmxcxData)
+      request({ url: 'mall/sh/searchsh.do', method: 'post', data: txmxcxData })
         .then(response => {
           this.loading = false;
-          for (var i = 0; i < response.data.list.length; i++) {
-            response.data.list[i].je = this.moneyData(response.data.list[i].je);
-          }
-          this.tableData = response.data.list;
-          this.listQuery.totalCount = response.data.total;
+          this.tableData = response.list;
+          this.listQuery.totalCount = response.total;
           console.log(response.data);
         })
         .catch(error => {

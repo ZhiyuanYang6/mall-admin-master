@@ -18,9 +18,9 @@ export const constantRouterMap = [
     redirect: '/spgl/ppflgl',
     meta: { noCache: false, title: '商品管理', icon: 'icon-shangpinguanli' },
     children: [
-      { path: 'ppflgl', component: _import('spgl/ppflgl'), name: "ppflgl", meta: { title: '品牌分类管理', icon: 'icon-danweiguanli', noCache: true } },
-      { path: 'spglchild', component: _import('spgl/spglchild'), name: "spglchild", meta: { title: '商品管理', icon: 'icon-danweiguanli', noCache: true } },
-      { path: 'spkccx', component: _import('spgl/spkccx'), name: "spkccx", meta: { title: '商品库存查询', icon: 'icon-danweiguanli', noCache: true } },
+      { path: 'ppflgl', component: _import('spgl/ppflgl'), name: "ppflgl", meta: { title: '品牌分类管理', icon: 'icon-danweiguanli', noCache: false } },
+      { path: 'spglchild', component: _import('spgl/spglchild'), name: "spglchild", meta: { title: '商品管理', icon: 'icon-danweiguanli', noCache: false } },
+      { path: 'spkccx', component: _import('spgl/spkccx'), name: "spkccx", meta: { title: '商品库存查询', icon: 'icon-danweiguanli', noCache: false } },
       { path: 'spckdj', component: _import('spgl/spckdj'), name: 'spckdj', meta: { noCache: false, title: '商品出库登记', icon: 'icon-danweiguanli' } },
       { path: 'sphkdj', component: _import('spgl/sphkdj'), name: 'sphkdj', meta: { noCache: false, title: '商品回库登记', icon: 'icon-danweiguanli' } },
       { path: 'spbsdj', component: _import('spgl/spbsdj'), name: 'spbsdj', meta: { noCache: false, title: '商品报损登记', icon: 'icon-danweiguanli' } },
@@ -93,6 +93,7 @@ export const constantRouterMap = [
 
   //登陆界面
   { path: '/login', component: _import('login/index'), hidden: true, },
+  { path: '/dgsf2', component: _import('yxhd/dgsf2'), hidden: true, },
   //主页
   {
     path: '',

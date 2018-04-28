@@ -10,6 +10,18 @@ export const asyncRouterMap = [
 ]
 import Layout from '@/views/layout/Layout'
 export const constantRouterMap = [
+  //主页
+  {
+    path: '',
+    component: Layout,
+    redirect: 'dashboard',
+    children: [{
+      path: 'dashboard',
+      component: _import('dashboard/index'),
+      name: 'dashboard',
+      meta: { title: '首页', icon: 'icon-danweiguanli', noCache: true } //
+    }]
+  },
   //商品管理
   {
     path: '/spgl',
@@ -94,18 +106,7 @@ export const constantRouterMap = [
   //登陆界面
   { path: '/login', component: _import('login/index'), hidden: true, },
   { path: '/dgsf2', component: _import('yxhd/dgsf2'), hidden: true, },
-  //主页
-  {
-    path: '',
-    component: Layout,
-    redirect: 'dashboard',
-    children: [{
-      path: 'dashboard',
-      component: _import('dashboard/index'),
-      name: 'dashboard',
-      meta: { title: '首页', icon: 'icon-danweiguanli', noCache: true } //
-    }]
-  },
+
 
 ]
 export default new Router({

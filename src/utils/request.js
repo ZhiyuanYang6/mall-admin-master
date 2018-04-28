@@ -32,7 +32,6 @@ service.interceptors.request.use(config => { // 在发送请求之前做些什�
 // respone拦截器
 service.interceptors.response.use( // 对响应数据做点什么
   response => {
-    debugger;
     if (typeof response.data == "string") {
       response.data = JSON.parse(response.data);
     }
@@ -43,7 +42,7 @@ service.interceptors.response.use( // 对响应数据做点什么
       return response.data
     }
     // console.log(response);
-    // console.log(response.data.data);
+    console.log(response.data);
     return response.data.data
   },
   error => { // 对响应错误做点什么

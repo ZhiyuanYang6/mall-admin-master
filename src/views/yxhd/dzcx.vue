@@ -8,7 +8,7 @@
       <!-- 右侧按钮 -->
       <el-form-item style="float: right;">
         <el-button type="warning" @click="onloadtable1()">查询</el-button>
-        <el-button type="warning" @click="onloadtable1()">添加</el-button>
+        <el-button type="warning" @click="updatagg()">添加</el-button>
       </el-form-item>
       <el-form-item>
         <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
@@ -34,7 +34,7 @@
         <el-table-column prop="bz" label="说明" align="center"> </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <el-button type="text" size="mini" @click="uploadimag(scope.row)">修改</el-button>
+            <el-button type="text" size="mini" @click="updatagg(scope.row)">修改</el-button>
             <el-button type="text" size="mini" v-if="scope.row.zt=='0'" @click="delclick(scope.row,1, '恢复')">恢复</el-button>
             <el-button type="text" size="mini" v-else @click="delclick(scope.row,0,'删除')">删除</el-button>
           </template>
@@ -156,6 +156,10 @@ export default {
       }).catch(() => {
         this.$message({ type: 'info', message: '已取消' + zt });
       });
+    },
+    updatagg() {
+      Message.warning("功能暂未开通");
+      return;
     }
   }
 }

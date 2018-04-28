@@ -2,16 +2,17 @@
   <div @mouseover="Moveradd()">
     <el-form label-position="left" ref="formline" :model="formline" status-icon :rules="rules2" size="small" label-width="80px" :inline="true">
       <el-form-item label="商品" prop="spbh">
-        <el-select style="width:250px" v-model="formline.spbh" filterable placeholder="请选择" @change="">
+        <el-select style="width:250px" v-model="formline.spbh" filterable placeholder="请选择" @change="querykcbyspbh()">
           <el-option v-for="item in splist" :key="item.spmc" :label="item.spmc" :value="item.spbh">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="批次号" prop="pch">
-        <el-select style="width:250px" v-model="formline.pch" filterable placeholder="请选择">
+        <el-select style="width:250px" v-model="formline.pch" filterable placeholder="请选择" @change="querykcbyspbh()">
           <el-option v-for="item in splist" :key="item.pch" :label="item.pch" :value="item.pch">
           </el-option>
         </el-select>
+        <!-- <span>{{vkcsl}}</span> -->
       </el-form-item>
       <el-form-item label="类型" prop="djr">
         <el-select style="width:250px" v-model="formline.lx" filterable placeholder="请选择">
@@ -72,6 +73,9 @@ export default {
           if (!Number.isInteger(value) && typeof value !== "number") {
             callback(new Error('请输入数字值'));
           } else {
+            if (this.vkcsl < value) {
+              callback(new Error('数量不能超过库存'));
+            }
             callback();
           }
         }, 500);
@@ -99,7 +103,26 @@ export default {
       restaurants: [], //全部商品
       timeout: null, //搜索商品定时器
       onceover: true,
+      vkcsl: 10,
     };
+  },
+  created: function() {
+    // this.onloadtable1();
+  },
+  onloadtable1(val) { //查询所有库存大于0的商品
+    var data = {
+      spbh: formline.spbh,
+      pch: formline.pch
+    }
+    request({ url: 'mall/spkc/getspkc.do', method: 'post', data: data })
+      .then((response) => {
+        debugger;
+        // console.log(response.data.data);
+        this.splist = response.list;
+      })
+      .catch((error) => {
+        Message.error("error：" + "请检查网络是否连接");
+      })
   },
   watch: {
     uploadimagehas: function(data, olddata) {
@@ -122,15 +145,15 @@ export default {
           } else {
             var url = "updatespkc.do";
           }
-          // axios.post('http://192.168.1.123:8088/mall/spkc/' + url, this.formline)
-          //   .then(response => {
-          this.ADSubmit();
-          //   })
-          //   .catch(error => {
-          //     Message.error("error：" + "请检查网络是否连接");
-          //   })
-          this.$message({ message: '添加失败：功能暂未开通', type: 'warning' });
-          // this.$message({ message: this.listrow.btn + '成功', type: 'success' });
+          request({ url: 'mall/spkc/' + url, method: 'post', data: this.formline })
+            .then(response => {
+              this.ADSubmit();
+            })
+            .catch(error => {
+              Message.error("error：" + "请检查网络是否连接");
+            })
+          //this.$message({ message: '添加失败：功能暂未开通', type: 'warning' });
+          this.$message({ message: this.listrow.btn + '成功', type: 'success' });
 
         } else {
           this.$message({ message: '表单验证未通过', type: 'error' });
@@ -161,6 +184,19 @@ export default {
         }
         this.onceover = false;
       }
+    },
+    querykcbyspbh() {
+      this.searchmain("", this.formline.spbh);
+    },
+    searchmain(url, val) {
+      console.log("改变了")
+      // request({ url: url, method: 'post', data: val })
+      // .then(response => {
+      if (this.vkcsl == 10) { this.vkcsl = 20 }
+      // })
+      // .catch(error => {
+      // Message.error("error：" + "请检查网络是否连接");
+      // })
     }
   }
 }

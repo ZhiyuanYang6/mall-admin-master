@@ -4,7 +4,7 @@
       <!--Logo area-->
       <el-col :xs="10" :sm="10" :md="{span:19,offset:1}">
         <div class="logo">
-          <span class="logo_prefix">XX</span>
+          <span class="logo_prefix">酉缘</span>
           <span class="logo_suffix">商城管理系统</span>
         </div>
       </el-col>

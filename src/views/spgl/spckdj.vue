@@ -63,6 +63,7 @@ export default {
   components: { Upspckdj },
   name: 'txmccx',
   data() {
+
     return {
       formInline: {
         bhmc: '',
@@ -84,6 +85,11 @@ export default {
       splist: [], //所有商品信息
     }
 
+  },
+  computed: {
+    imgurl() {
+      return this.$store.state.user.urlImg
+    }
   },
   created: function() {
     this.$store.dispatch('getNewDate', this.formInline);
@@ -134,7 +140,7 @@ export default {
         })
     },
     imgUrl(imgurl) {
-      return "http://192.168.1.123:8088" + imgurl;
+      return this.imgurl + imgurl;
     },
     onloadtable2(val) { //查询类别品牌
       request({ url: 'mall/spfl/searchspflbysplx.do', method: 'post', data: {} }).then((response) => {
@@ -152,8 +158,6 @@ export default {
       }
       request({ url: 'mall/spkc/getspkc.do', method: 'post', data: data })
         .then((response) => {
-          var a = val;
-          debugger;
           // console.log(response.data.data);
           this.splist = response.list;
         })
@@ -196,6 +200,8 @@ export default {
       });
     },
     uploadimag(row, add) { // 添加、修改 库存
+      // Message.warning("功能暂未开通");
+      // return;
       if (add) {
         this.row = {};
         this.row.btn = "添加";

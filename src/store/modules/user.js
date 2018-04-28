@@ -4,6 +4,8 @@ import { getSession, setSession, removeSession } from '@/utils/auth'
 const user = {
   state: {
     token: getSession(),
+    // urlImg: 'http://192.168.1.123:8088/',
+    urlImg: 'http://47.97.105.123:8080/',
     name: '',
     avatar: '',
     roles: []

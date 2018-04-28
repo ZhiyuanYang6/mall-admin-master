@@ -177,6 +177,8 @@ export default {
       this.onloadtable1();
     },
     updatagg(row, add) { //添加或修改
+      Message.warning("功能暂未开通");
+      return;
       // debugger;
       if (add == "add") { //添加
         this.row.title = "添加广告";

@@ -90,6 +90,11 @@ export default {
     }
 
   },
+  computed: {
+    imgurl() {
+      return this.$store.state.user.urlImg
+    }
+  },
   created: function() {
     this.onloadtable2();
     this.onloadtable1();
@@ -138,7 +143,7 @@ export default {
       return (parseFloat(money) / 100).toFixed(2);
     },
     imgUrl(imgurl) {
-      return "http://192.168.1.123:8088" + imgurl;
+      return this.imgurl + imgurl;
     },
     uploadimag(row, add) { //           添加、修改 商品
       if (add) {
@@ -167,7 +172,6 @@ export default {
     },
     onloadtable2(val) { //加载类别品牌
       request({ url: 'mall/spfl/searchspflbysplx.do', method: 'post', data: {} }).then(response => {
-        debugger;
         this.$store.dispatch('getTrees', response.data);
         this.options1 = response.data.treedata; //添加树结构
       })

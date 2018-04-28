@@ -6,7 +6,7 @@
         <el-input v-model="formInline.ggmc" style="width: 200px;" placeholder="广告名称"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-date-picker v-model="formInline.sj" type="datetimerange" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00']">
+        <el-date-picker v-model="formInline.sj" type="datetimerange" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00']" unlink-panels="false">
         </el-date-picker>
       </el-form-item>
       <el-form-item>
@@ -18,7 +18,7 @@
       <!-- 右侧按钮 -->
       <el-form-item>
         <el-button type="warning" @click="onloadtable1()">查询</el-button>
-        <el-button type="warning" @click="onloadtable1()">添加</el-button>
+        <el-button type="warning" @click="updatagg()">添加</el-button>
       </el-form-item>
     </el-form>
     <!-- 表格 -->
@@ -27,7 +27,11 @@
       <el-table :data="tableData" @sort-change="sortChange" v-loading="loading" style="width:100%" border>
         <el-table-column type="index" width="50" label="序号" align="center"> </el-table-column>
         <el-table-column prop="ggmc" label="广告名称" align="center"> </el-table-column>
-        <el-table-column prop="ggurl" label="广告图片" align="center"> </el-table-column>
+        <el-table-column prop="ggurl" label="广告图片" align="center">
+          <template slot-scope="scope">
+            <img :src="scope.row.ggurl" alt="0" width="80px" height="80px">
+          </template>
+        </el-table-column>
         <el-table-column prop="createTime" label="上传时间" align="center"> </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
@@ -78,6 +82,12 @@ export default {
     }
 
   },
+  computed: {
+    imgurl() {
+      return this.$store.state.user.urlImg
+    }
+  },
+
   created: function() {
     this.$store.dispatch('getNewDate', this.formInline);
     this.onloadtable1();
@@ -113,6 +123,11 @@ export default {
       console.log(txmxcxData);
       request({ url: 'mall/gg/searchgg.do', method: 'post', data: txmxcxData })
         .then(response => {
+
+          for (var i = 0; i < response.list.length; i++) {
+            debugger;
+            response.list[i].ggurl = this.imgurl + response.list[i].ggurl;
+          }
           this.loading = false;
           this.tableData = response.list;
           this.listQuery.totalCount = response.total;
@@ -154,6 +169,20 @@ export default {
       }).catch(() => {
         this.$message({ type: 'info', message: '已取消' + zt });
       });
+    },
+    updatagg(row, add) { //添加或修改
+      Message.warning("功能暂未开通");
+      return;
+      // debugger;
+      if (add == "add") { //添加
+        this.row.title = "添加广告";
+        this.row.btn = "添加";
+      } else {
+        this.row = row;
+        this.row.title = "修改广告";
+        this.row.btn = "修改";
+      }
+      this.showupdatadialog = true;
     }
   }
 }

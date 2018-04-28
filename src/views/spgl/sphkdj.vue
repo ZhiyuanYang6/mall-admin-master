@@ -85,6 +85,11 @@ export default {
     }
 
   },
+  computed: {
+    imgurl() {
+      return this.$store.state.user.urlImg
+    }
+  },
   created: function() {
     this.$store.dispatch('getNewDate', this.formInline);
     this.onloadtable1();
@@ -125,7 +130,7 @@ export default {
           // console.log(response.data);
           this.loading = false;
           for (var i = 0; i < response.list.length; i++) {
-            response.list[i].tpurl = "http://192.168.1.123:8088" + response.list[i].tpurl;
+            response.list[i].tpurl = this.imgurl + response.list[i].tpurl;
             response.list[i].djr = response.list[i].djr ? response.list[i].djr : "未设置";
           }
           this.tableData = response.list;
@@ -191,6 +196,8 @@ export default {
       });
     },
     uploadimag(row, add) { // 添加、修改 库存
+      Message.warning("功能暂未开通");
+      return;
       if (add) {
         this.row = {};
         this.row.btn = "添加";

@@ -50,7 +50,7 @@
         <el-table-column prop="shrid" label="客服" align="center"> </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <el-button type="text" size="mini">退款</el-button>
+            <el-button type="text" size="mini" @click="tk()">退款</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -155,6 +155,10 @@ export default {
     moneyData(money) { //不能用过滤器，很难受 金额
       return (money / 100).toFixed(2)
     },
+    tk() {
+      Message.warning("功能暂未开通");
+      return;
+    }
   }
 }
 

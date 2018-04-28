@@ -21,10 +21,10 @@
         <el-input v-model="formline.dw" style="width:250px;"></el-input>
       </el-form-item>
       <el-form-item label="规格" prop="gg">
-        <el-input v-model="formline.gg" style="width:250px;"></el-input>
+        <el-input v-model="formline.gg" style="width:250px;"></el-input><i class="iconfont icon-renminbi"></i>
       </el-form-item>
       <el-form-item label="进货价格" prop="jhjg">
-        <el-input v-model.number="formline.jhjg" style="width:250px;"></el-input>
+        <el-input v-model.number="formline.jhjg" style="width:242px;"></el-input>元
       </el-form-item>
       <el-form-item label="保质期" prop="bzq">
         <el-input v-model.number="formline.bzq" style="width:250px;"></el-input>
@@ -142,6 +142,10 @@ export default {
           }
           request({ url: 'mall/spkc/' + url, method: 'post', data: this.formline })
             .then(response => {
+              if (response.code == "-1") {
+                this.$message({ message: '添加失败：商品批次号已存在', type: 'warning' });
+                return;
+              }
               this.ADSubmit();
             })
             .catch(error => {
@@ -198,6 +202,11 @@ hr {
 
 .el-form-item {
   margin: 10px 20px;
+}
+
+.iconfont {
+  height: 60px;
+  width: 60px;
 }
 
 </style>

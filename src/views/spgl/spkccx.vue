@@ -86,6 +86,11 @@ export default {
     }
 
   },
+  computed: {
+    imgurl() {
+      return this.$store.state.user.urlImg
+    }
+  },
   created: function() {
     this.onloadtable1();
     this.onloadtable2();
@@ -123,7 +128,7 @@ export default {
           this.loading = false;
           for (var i = 0; i < response.list.length; i++) {
             response.list[i].jhjg = this.moneyData(response.list[i].jhjg);
-            response.list[i].tpurl = "http://192.168.1.123:8088" + response.list[i].tpurl;
+            response.list[i].tpurl = this.imgurl + response.list[i].tpurl;
           }
           this.tableData = response.list;
           this.listQuery.totalCount = response.total;

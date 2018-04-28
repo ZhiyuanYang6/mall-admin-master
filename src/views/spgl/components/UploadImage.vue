@@ -8,7 +8,7 @@
         <el-input v-model="formline.spmc" style="width:250px;"></el-input>
       </el-form-item>
       <el-form-item label="商品售价" prop="spsj">
-        <el-input v-model.number="formline.spsj" style="width:250px;"></el-input>
+        <el-input v-model.number="formline.spsj" style="width:242px;"></el-input><i class="iconfont icon-renminbi"></i>
       </el-form-item>
       <el-form-item label="分类品牌" prop="flid">
         <el-cascader placeholder="请选择品牌类型" ref="options1" style="width:250px;" :options="options1" v-model="formline.flid" :show-all-levels="false" clearable> </el-cascader>
@@ -92,7 +92,11 @@ export default {
       setTimeout(() => {
         if (!Number.isInteger(value) && typeof value !== "number") {
           callback(new Error('请输入数字值'));
+
         } else {
+          if (value <= 0) {
+            callback(new Error('商品必须大于0'));
+          }
           callback();
         }
       }, 400);
@@ -265,6 +269,7 @@ export default {
       formdata1.append('spmc', this.formline.spmc);
       formdata1.append('remark', this.formline.remark);
       formdata1.append('flId', this.formline.flid[1] ? this.formline.flid[1] : '');
+      console.log(formdata1);
       request({ url: 'mall/spxx/addspxx.do', method: 'post', data: formdata1 }).then(response => {
           if (response.code == "-1") {
             this.$message({ message: '添加失败：商品编号已添加', type: 'warning' });
@@ -472,6 +477,11 @@ div.tpmc {
   position: relative;
   top: 40px;
   left: 150px;
+}
+
+.iconfont {
+  height: 60px;
+  width: 60px;
 }
 
 </style>

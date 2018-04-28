@@ -9,7 +9,7 @@
       <!-- 右侧按钮 -->
       <el-form-item>
         <el-button type="warning" @click="onloadtable1()">查询</el-button>
-        <el-button type="warning" @click="onloadtable1()">发货</el-button>
+        <el-button type="warning" @click="td()">发货</el-button>
       </el-form-item>
       <el-form-item>
         <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
@@ -25,17 +25,17 @@
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" width="50" label="序号" align="center"> </el-table-column>
         <el-table-column prop="ddh" label="订单号" align="center"> </el-table-column>
-        <el-table-column prop="xh" label="商品序号" align="center"> </el-table-column>
+        <!--    <el-table-column prop="xh" label="商品序号" align="center"> </el-table-column>
         <el-table-column prop="tpurl" label="图片" align="center">
           <template slot-scope="scope">
             <img :src="scope.row.tpurl+'?'" alt="0" width="80px" height="80px">
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column prop="spbh" label="商品编号" align="center"></el-table-column>
         <el-table-column prop="spmc" label="标题" align="center"> </el-table-column>
         <el-table-column prop="spdj" label="售价" align="center"> </el-table-column>
         <el-table-column prop="sl" label="数量" align="center"> </el-table-column>
-        <el-table-column prop="yhje" label="优惠金额" align="center"> </el-table-column>
+        <el-table-column prop="yhje" label="总金额" align="center"> </el-table-column>
         <el-table-column prop="loginName" label="买家" align="center"> </el-table-column>
         <el-table-column prop="zt" label="状态" align="center">
           <template slot-scope="scope">
@@ -47,7 +47,7 @@
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
             <el-button type="text" size="mini" @click="getdetl(scope.row)">详情</el-button>
-            <el-button type="text" size="mini" @click="onloadtable1()">退单</el-button>
+            <el-button type="text" size="mini" @click="td()">退单</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -173,6 +173,10 @@ export default {
       this.uploadimagehas = false;
       this.onloadtable1();
     },
+    td() {
+      Message.warning("功能暂未开通");
+      return;
+    }
   }
 }
 

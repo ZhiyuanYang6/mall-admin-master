@@ -1,19 +1,43 @@
 <template>
   <div class="smain">
     <el-tabs tab-position="left" type="border-card" style="height: 200px;">
-      <el-tab-pane label="分类一">分类一</el-tab-pane>
-      <el-tab-pane label="分类二">分类二</el-tab-pane>
-      <el-tab-pane label="分类三">分类三 </el-tab-pane>
-      <el-tab-pane label="分类四">分类四</el-tab-pane>
+      <el-tab-pane v-for="item in tabsdata" :key="item.value" :label="item.label">
+        <el-button v-for="itemChild in item.children" :key="itemChild.value" type="success">{{itemChild.label}}</el-button>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
 <script>
-import axios from 'axios'
+import request from '@/utils/request'
 import { Message } from 'element-ui'
 
 export default {
-
+  name: 'txmccx',
+  data() {
+    return {
+      tabsdata: [],
+    }
+  },
+  created: function() {
+    this.onloadtable();
+    // this.onloadtable();
+  },
+  methods: {
+    onloadtable() { //查询
+      var sppfldata = {
+        splx: '',
+      };
+      request({ url: 'mall/spfl/searchspflbysplx.do', method: 'post', data: sppfldata })
+        .then(response => {
+          this.$store.dispatch('getTrees', response.data);
+          this.tabsdata = response.data.treedata;
+          console.log(this.tabsdata)
+        })
+        .catch(error => {
+          Message.error("error：" + "请检查网络是否连接");
+        })
+    },
+  }
 }
 
 </script>

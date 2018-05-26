@@ -9,14 +9,16 @@
       <!-- 右侧按钮 -->
       <el-form-item>
         <el-button type="warning" @click="onloadtable1()">查询</el-button>
-        <el-button type="warning" @click="td()">发货</el-button>
+        <!-- <el-button type="warning" @click="td()">发货</el-button>
+ -->
       </el-form-item>
-      <el-form-item>
-        <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
-          <el-radio-button label="">显示历史</el-radio-button>
-          <el-radio-button label="2">关闭历史</el-radio-button>
-        </el-radio-group>
-      </el-form-item>
+      <!-- <el-form-item>
+  <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
+    <el-radio-button label="1">关闭历史</el-radio-button>
+    <el-radio-button label="">显示历史</el-radio-button>
+  </el-radio-group>
+</el-form-item>
+ -->
     </el-form>
     <!-- 表格 -->
     <div class="stable">
@@ -34,20 +36,19 @@
         <el-table-column prop="spbh" label="商品编号" align="center"></el-table-column>
         <el-table-column prop="spmc" label="标题" align="center"> </el-table-column>
         <el-table-column prop="spdj" label="售价" align="center"> </el-table-column>
-        <el-table-column prop="sl" label="数量" align="center"> </el-table-column>
-        <el-table-column prop="yhje" label="总金额" align="center"> </el-table-column>
+        <el-table-column prop="spsl" label="数量" align="center"> </el-table-column>
+        <el-table-column prop="zje" label="总金额" align="center"> </el-table-column>
         <el-table-column prop="loginName" label="买家" align="center"> </el-table-column>
-        <el-table-column prop="zt" label="状态" align="center">
-          <template slot-scope="scope">
-            <span v-if="!scope.row.zt">待付款</span>
-            <span v-else>待发货</span>
-          </template>
+        <el-table-column prop="phone" label="联系方式" align="center"> </el-table-column>
+        <el-table-column prop="state" label="状态" align="center">
         </el-table-column>
-        <el-table-column prop="bz" label="备注" align="center"> </el-table-column>
+        <!-- <el-table-column prop="bz" label="备注" align="center"> </el-table-column>
+ -->
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
             <el-button type="text" size="mini" @click="getdetl(scope.row)">详情</el-button>
-            <el-button type="text" size="mini" @click="td()">退单</el-button>
+            <!-- <el-button type="text" size="mini" @click="td()">退单</el-button>
+ -->
           </template>
         </el-table-column>
       </el-table>
@@ -78,7 +79,7 @@ export default {
         yhkh: '',
         sj: '',
         sele1: '',
-        radio: '',
+        radio: '1',
       },
       opttxzt: [
         { value: '0', label: '好评' },
@@ -103,8 +104,13 @@ export default {
     }
 
   },
+  computed: {
+    imgurl() {
+      return this.$store.state.user.urlImg;
+    }
+  },
   created: function() {
-    this.$store.dispatch('getNewDate', this.formInline);
+    // this.$store.dispatch('getNewDate', this.formInline);
     this.onloadtable1();
   },
   methods: {
@@ -132,29 +138,34 @@ export default {
         pageSize: this.listQuery.pageSize,
         startTime: this.formInline.startTime,
         endTime: this.formInline.endTime,
-        zt: this.formInline.radio,
-      }
-      console.log(txmxcxData);
-      request({ url: 'mall/dd/searchdd.do', method: 'post', data: txmxcxData })
-        .then(response => {
-          this.loading = false;
-          for (var i = 0; i < response.list.length; i++) {
-            response.list[i].spdj = this.moneyData(response.list[i].spdj);
-            response.list[i].tpurl = this.imgUrl(response.list[i].tpurl);
+      };
+      request({ url: 'mall/dd/searchdd.do', method: 'post', data: txmxcxData }).then(response => {
+        this.loading = false;
+        for (var i = 0; i < response.list.length; i++) {
+          response.list[i].spdj = this.moneyData(response.list[i].spdj);
+          response.list[i].spzhj = this.moneyData(response.list[i].spzhj);
+          response.list[i].zje = this.moneyData(response.list[i].zje);
+          response.list[i].yhje = this.moneyData(response.list[i].yhje);
+          response.list[i].zfje = this.moneyData(response.list[i].zfje);
+          response.list[i].tpurl = this.imgUrl(response.list[i].tpurl);
+          response.list[i].state = this.setState(response.list[i].zt);
+          response.list[i].zffs = this.setZffs(response.list[i].zffs);
+          if (response.list[i].spzkzt == '0' || response.list[i].spzkzt == null) {
+            response.list[i].spzk = '无';
+            response.list[i].spzhj = '无';
           }
-          this.tableData = response.list;
-          this.listQuery.totalCount = response.total;
-          console.log(response.data);
-        })
-        .catch(error => {
-          Message.error("error：" + "请检查网络是否连接");
-        })
+        }
+        this.tableData = response.list;
+        this.listQuery.totalCount = response.total;
+      }).catch(error => {
+        Message.error("error：" + "请检查网络是否连接");
+      })
     },
     timeFormat() { //时间格式化yy-mm-dd hh:mm:ss
       if (this.formInline.sj) {
         this.$store.dispatch('timeFormat', this.formInline);
       } else {
-        this.$store.dispatch('getNewDate', this.formInline);
+        // this.$store.dispatch('getNewDate', this.formInline);
         this.formInline.startTime = "";
         this.formInline.endTime = "";
       }
@@ -162,8 +173,38 @@ export default {
     moneyData(money) { //不能用过滤器，很难受 金额
       return (money / 100).toFixed(2)
     },
+    setState(val) {
+      if (val == '0') {
+        return '待付款';
+      } else if (val == '1') {
+        return '已付款';
+      } else if (val == '2') {
+        return '已发货';
+      } else if (val == '3') {
+        return '已收货';
+      } else if (val == '4') {
+        return '已完成';
+      } else if (val == '5') {
+        return '已取消';
+      } else {
+        return '已退款';
+      }
+    },
+    setZffs(val) {
+      if (val == '1') {
+        return '微信公众号';
+      } else if (val == '2') {
+        return '微信App';
+      } else if (val == '3') {
+        return '支付宝App';
+      } else if (val == '4') {
+        return '会员余额';
+      } else {
+        return '';
+      }
+    },
     imgUrl(imgurl) {
-      return "http://192.168.1.123:8088" + imgurl;
+      return this.imgurl + imgurl;
     },
     getdetl(row) { //           查看详情
       this.row = row;

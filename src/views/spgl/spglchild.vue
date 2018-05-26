@@ -9,10 +9,11 @@
         <el-cascader placeholder="请选择品牌类型" ref="options1" :options="options1" v-model="formInline.flid" :show-all-levels="false" clearable> </el-cascader>
       </el-form-item>
       <el-form-item>
-        <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
-          <el-radio-button label="">显示历史</el-radio-button>
+        <el-switch v-model="formInline.radio" active-text="历史记录" @change="onloadtable1"></el-switch>
+        <!--         <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
           <el-radio-button label="1">关闭历史</el-radio-button>
-        </el-radio-group>
+          <el-radio-button label="">显示历史</el-radio-button>
+        </el-radio-group> -->
       </el-form-item>
       <!-- 右侧按钮 -->
       <el-form-item>
@@ -38,10 +39,13 @@
         <el-table-column prop="remark" label="说明" align="center"> </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <el-button type="text" size="mini">详情</el-button>
-            <el-button type="text" size="mini" @click="uploadimag(scope.row)">修改</el-button>
-            <el-button type="text" size="mini" v-if="!scope.row.status" @click="delclick(scope.row,1, '恢复')">恢复</el-button>
-            <el-button type="text" size="mini" v-else @click="delclick(scope.row,0,'删除')">删除</el-button>
+            <!-- <el-button type="text" size="mini">详情</el-button>-->
+            <!-- <el-button type="text" size="mini" v-if="!scope.row.status" @click="delclick(scope.row,1, '恢复')">恢复</el-button> -->
+            <el-button type="text" size="mini" v-if="scope.row.status==1" @click="uploadimag(scope.row)">修改</el-button>
+            <el-button type="text" size="mini" v-if="scope.row.status==1" @click="delclick(scope.row,0,'删除')">删除</el-button>
+            <span v-if="scope.row.status=='0'">
+              已删除
+            </span>
           </template>
         </el-table-column>
       </el-table>
@@ -74,7 +78,7 @@ export default {
         yhkh: '',
         sj: '',
         flid: [],
-        radio: ''
+        radio: false,
       },
       options1: [],
       listQuery: {
@@ -92,7 +96,7 @@ export default {
   },
   computed: {
     imgurl() {
-      return this.$store.state.user.urlImg
+      return this.$store.state.user.urlImg;
     }
   },
   created: function() {
@@ -122,7 +126,7 @@ export default {
         pageNum: this.listQuery.pageNum,
         pageSize: this.listQuery.pageSize,
         flid: this.formInline.flid[1] ? this.formInline.flid[1] : '',
-        status: this.formInline.radio,
+        status: this.formInline.radio ? '' : 1,
         bhmc: this.formInline.hybh
       };
       request({ url: 'mall/spxx/searchspxx.do', method: 'post', data: spglCData }).then(response => {
@@ -145,7 +149,7 @@ export default {
     imgUrl(imgurl) {
       return this.imgurl + imgurl;
     },
-    uploadimag(row, add) { //           添加、修改 商品
+    uploadimag(row, add) { //添加、修改 商品
       if (add) {
         this.row = {};
         this.row.btn = "添加商品";
@@ -174,7 +178,7 @@ export default {
       request({ url: 'mall/spfl/searchspflbysplx.do', method: 'post', data: {} }).then(response => {
         this.$store.dispatch('getTrees', response.data);
         this.options1 = response.data.treedata; //添加树结构
-      })
+      });
     },
 
     childchanged(childdata) { //接收子组件参数
@@ -185,7 +189,7 @@ export default {
     delclick(row, has, zt) { //删除商品
       var spxx = {
         spbh: row.spbh,
-        status: has
+        status: has,
       }
       this.$confirm('是否' + zt + '该条商品信息, 是否继续?', '提示', {
         confirmButtonText: '确定',

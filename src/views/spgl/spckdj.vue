@@ -35,14 +35,21 @@
         <el-table-column prop="sppp" label="品牌" align="center"> </el-table-column>
         <el-table-column prop="pch" label="批次号" align="center"> </el-table-column>
         <el-table-column prop="sl" label="数量" align="center"> </el-table-column>
-        <el-table-column prop="djr" label="登记人" align="center"> </el-table-column>
-        <el-table-column prop="bz" label="说明" align="center"> </el-table-column>
-        <el-table-column label="操作" align="center">
+        <el-table-column prop="lx" label="出库类型" align="center">
           <template slot-scope="scope">
-            <el-button type="text" size="mini" @click="zwktff">修改</el-button>
-            <el-button type="text" size="mini" @click="zwktff">删除</el-button>
+            <span v-if="scope.row.lx=='0'">售后发</span>
+            <span v-if="scope.row.lx=='1'">购买发</span>
+            <span v-if="scope.row.lx=='2'"> 其他</span>
+            <span v-else></span>
           </template>
         </el-table-column>
+        <el-table-column prop="bz" label="说明" align="center"> </el-table-column>
+        <!-- <el-table-column label="操作" align="center">
+          <template slot-scope="scope">
+            <el-button type="text" size="mini" @click="uploadimag(scope.row)">修改</el-button>
+            <el-button type="text" size="mini" @click="zwktff">删除</el-button>
+          </template>
+        </el-table-column> -->
       </el-table>
     </div>
     <el-dialog class="upimage" :title="row.title" :visible.sync="uploadimagehas" width="56%" style="padding-bottom: 5%;">
@@ -92,8 +99,8 @@ export default {
     }
   },
   created: function() {
-    this.$store.dispatch('getNewDate', this.formInline);
-    //this.onloadtable1();
+    // this.$store.dispatch('getNewDate', this.formInline);
+    this.onloadtable1();
     this.onloadtable2();
     this.onloadtable3();
   },
@@ -125,7 +132,6 @@ export default {
         startDate: this.formInline.startTime,
         endDate: this.formInline.endTime,
       };
-      console.log(txmxcxData);
       request({ url: 'mall/ckxq/searchckxq.do', method: 'post', data: txmxcxData }).then(response => {
           this.loading = false;
           for (var i = 0; i < response.list.length; i++) {
@@ -153,10 +159,7 @@ export default {
         })
     },
     onloadtable3(val) { //查询所有库存大于0的商品
-      var data = {
-        spbh: val
-      }
-      request({ url: 'mall/spkc/getspkc.do', method: 'post', data: data })
+      request({ url: 'mall/spkc/getspkc.do', method: 'post', data: {} })
         .then((response) => {
           // console.log(response.data.data);
           this.splist = response.list;
@@ -169,7 +172,7 @@ export default {
       if (this.formInline.sj) {
         this.$store.dispatch('timeFormat', this.formInline);
       } else {
-        this.$store.dispatch('getNewDate', this.formInline);
+        // this.$store.dispatch('getNewDate', this.formInline);
         this.formInline.startTime = "";
         this.formInline.endTime = "";
       }
@@ -200,8 +203,6 @@ export default {
       });
     },
     uploadimag(row, add) { // 添加、修改 库存
-      // Message.warning("功能暂未开通");
-      // return;
       if (add) {
         this.row = {};
         this.row.btn = "添加";

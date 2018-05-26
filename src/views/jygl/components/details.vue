@@ -1,119 +1,231 @@
 <template>
-  <div class="smain" @mouseover="Moveradd()">
+  <div class="smain">
     <el-card class="box-card img" :body-style="{padding:'5px'}">
-      <img src="http://pic.qiantucdn.com/58pic/28/40/34/96758PIC9y6_1024.jpg!/fw/780/watermark/url/L3dhdGVybWFyay12MS4zLnBuZw==/align/center/crop/0x1009a0a0"></img>
+      <img :src="listrow.tpurl"></img>
     </el-card>
     <el-card class="box-card sp" :body-style="{padding:'5px'}">
       <span class="title">商品</span>
       <el-table size="mini" :data="tableData1" class="table1" border>
-        <el-table-column prop="name" label="名称" align="center"> </el-table-column>
-        <el-table-column prop="dj" sortable='custom' label="单价" align="center"> </el-table-column>
-        <el-table-column prop="sl" label="数量" align="center"> </el-table-column>
-        <el-table-column prop="je" label="金额" align="center"> </el-table-column>
-        <el-table-column prop="yh" label="优惠" align="center"> </el-table-column>
-        <el-table-column prop="je" label="金额" align="center"></el-table-column>
-        <el-table-column prop="xq" label="详情" align="center"></el-table-column>
-        <el-table-column prop="bz" label="备注" align="center"></el-table-column>
+        <el-table-column prop="spmc" label="名称" align="center"> </el-table-column>
+        <el-table-column prop="spdj" sortable='custom' label="单价" align="center"> </el-table-column>
+        <el-table-column prop="spsl" label="数量" align="center"> </el-table-column>
+        <el-table-column prop="spzk" label="折扣" align="center">
+        </el-table-column>
+        <el-table-column prop="spzhj" label="折后价" align="center">
+        </el-table-column>
+        <el-table-column prop="zje" label="总金额" align="center"></el-table-column>
+        <el-table-column prop="zfje" label="支付金额" align="center"></el-table-column>
       </el-table>
     </el-card>
     <el-card class="box-card md" :body-style="{padding:'5px'}">
-      <span class="title">门店</span>
+      <span class="title">订单详情</span>
       <div class="mdList mdLeft">
-        <p><span>机器类型</span><span class="fr">{{mdlist.lx}}</span></p>
-        <p><span>机器编码</span><span class="fr">{{mdlist.jqbm}}</span></p>
-        <p><span>交易号</span><span class="fr">{{mdlist.jyh}}</span></p>
-        <p><span>货道</span><span class="fr">{{mdlist.hd}}</span></p>
-        <p><span>出货数量</span><span class="fr">{{mdlist.chsl}}</span></p>
-        <p><span>出货状态</span><span class="fr">{{mdlist.chzt}}</span></p>
-        <p><span>出货时间</span><span class="fr">{{mdlist.chsj}}</span></p>
+        <p><span>订单号</span><span class="fr">{{mdlist.ddh}}</span></p>
+        <p><span>订单状态</span><span class="fr">{{mdlist.state}}</span></p>
+        <p><span>总金额</span><span class="fr">{{mdlist.zje}}</span></p>
+        <p><span>优惠金额</span><span class="fr">{{mdlist.yhje}}</span></p>
+        <p><span>积分</span><span class="fr">{{mdlist.jf}}</span></p>
+        <p><span>红包</span> <span class="fr">{{mdlist.hb}}</span></p>
+        <p><span>卡卷</span><span class="fr">{{mdlist.kj}}</span></p>
       </div>
       <div class="mdList">
-        <p><span>收款方式</span><span class="fr">{{mdlist.skfs}}</span></p>
-        <p><span>收款金额</span><span class="fr">{{mdlist.skje}}</span></p>
-        <p><span>找零</span><span class="fr">{{mdlist.zl}}</span></p>
-        <p>
-          <span>交易前机器库存</span>
-          <el-button type="text" class="fr">查看出货详情</el-button>
-          <span class="fr">{{mdlist.jyqjqkc}}</span>
-        </p>
-        <p>
-          <span>软件版本</span>
-          <el-button type="text" class="fr">查看该版本详情</el-button>
-          <span class="fr" style="color: #E7262C" v-if="mdlist.uphas">（需更新）</span>
-          <span class="fr">{{mdlist.rjbb}}</span>
-        </p>
-        <p><span>订单创建时间</span><span class="fr">{{mdlist.ddcjsj}}</span></p>
+        <p><span>支付金额</span><span class="fr">{{mdlist.zfje}}</span></p>
+        <p><span>支付时间</span><span class="fr">{{mdlist.zfsj}}</span></p>
+        <p><span>支付方式</span><span class="fr">{{mdlist.zffs}}</span></p>
+        <p><span>发货单号</span><span class="fr">{{mdlist.fhdh}}</span></p>
+        <p><span>收货地址</span><span class="fr">{{mdlist.memberShdz}}</span></p>
+        <p><span>收件人电话</span><span class="fr">{{mdlist.phone}}</span></p>
+        <p><span>快递公司</span><span class="fr">{{mdlist.kdgs}}</span></p>
+        <div class="bombtn">
+          <el-button class="btn" type="primary" :disabled="listrow.zt!=1" @click="dialogVisible=true">发货</el-button>
+          <!-- <el-button class="btn" type="primary" :disabled="listrow.zt==4||listrow.zt==5||listrow.zt==6||listrow.zt==0" @click="tdsubmit()">退单</el-button>
+ -->
+        </div>
       </div>
     </el-card>
+    <!-- 修发货-->
+    <el-dialog title="订单发货" :visible.sync="dialogVisible" width="50%" append-to-body>
+      <el-form ref="formline" :model="formline" status-icon size="small" class="formsty" label-width="60px" :inline="true">
+        <el-form-item label="批次号">
+          <el-select style="width:200px" v-model="formline.pch" filterable placeholder="请选择" @change="getjhj()">
+            <el-option v-for="item in pclist" :key="item.pch" :label="item.pch" :value="item.pch">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="进货价">
+          <el-input v-model="formline.jhj" disabled style="width:200px;"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="subbtn" size="small" type="success" @click="submitUpload()">确认</el-button>
+          </el-form-it>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 <script>
+import { Message } from 'element-ui'
+import request from '@/utils/request'
 export default {
   props: ['listrow', "uploadimagehas"],
   data() {
     return {
-      tableData1: [{
-        name: "Galaxy S9",
-        dj: "9999",
-        sl: "1",
-        je: "9999",
-        yh: "200",
-        xq: "暂无",
-        bz: "暂无",
-        img: "http://pic.qiantucdn.com/58pic/28/40/34/96758PIC9y6_1024.jpg!/fw/780/watermark/url/L3dhdGVybWFyay12MS4zLnBuZw==/align/center/crop/0x1009a0a0"
-      }],
-      sfklist: {
-        fkje: "2元",
-        tkjl: "已退款2元",
-        tksj: "2017-11-7 11:14:11",
-        dqzt: "已全额退款",
-        zfsj: "2017-11-7 11:14:11",
-        zffs: "微信的扫码",
-        jydh: "421000004987546513213213",
-        shdh: "AA42100000498754651321321"
+      tableData1: [],
+      mdlist: {},
+      dialogVisible: false,
+      formline: {
+        zjt: '',
+        pch: '',
+        jhj: '',
       },
-      mdlist: {
-        lx: "无人售货机",
-        jqbm: "1605600001",
-        jyh: "6214",
-        hd: "001",
-        chsl: "0",
-        chzt: "卡货",
-        chsj: "2017-11-14 12:11:11",
-        skfs: "微信扫码",
-        skje: "2元",
-        zl: "0",
-        jyqjqkc: "255",
-        rjbb: "2.43",
-        ddcjsj: "2017-11-14 12:11:11",
-        uphas: "false"
-      },
-      onceover: false,
+      options: '',
+      pclist: [],
     }
   },
-  created: function() { //创建组件初始化
-    this.onceover = true;
+  created: function() {
+    this.initialize();
   },
   watch: {
     uploadimagehas: function(data, olddata) {
       if (data) {
-        // debugger;
-        console.log("uploadimagehas：" + data)
-        this.onceover = data;
+        this.initialize();
+      }
+    },
+    dialogVisible: function(data, olddata) {
+      if (data) {
+        var spkc = {
+          spbh: this.listrow.spbh,
+          sl: this.listrow.sl,
+        }
+        request({ url: 'mall/spkc/getspkc.do', method: 'post', data: spkc }).then((response) => {
+          this.pclist = response.list;
+
+        }).catch((error) => {
+          Message.error("error：" + "请检查网络是否连接");
+        })
       }
     }
   },
   methods: {
-    Moveradd() { ////////////////////////创建后进入组件初始化
-      if (this.onceover) {
-        this.onceover = false;
-        console.log(this.listrow)
+    tdsubmit() {
+      if (this.listrow.zt == 1) {
+        this.$confirm('订单是否确认退单?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.thload(this.listrow.zt, '2');
+        }).catch(() => {
+          this.$message({ type: 'info', message: "已取消退单" });
+        });
+        return;
+      }
+      this.$confirm('当前状态可以进行换货，是否进行换货操作?关闭进行退货操作', '提示', {
+        confirmButtonText: '我要换货',
+        cancelButtonText: '继续退货',
+        type: 'warning',
+        showClose: false,
+        closeOnClickModal: false
+      }).then(() => { ///////////////////换货
+        // request({ url: 'mall/ggw/delggw.do', method: 'post', data: {} }).then((response) => {
+        this.thload(this.listrow.zt, '1');
+        //console.info(this.listrow);
+        // }).catch((error) => {
+        // Message.error("error：" + "请检查网络是否连接");
+        // });
+      }).catch(() => {
+        this.thload(this.listrow.zt, '0');
+      });
+    },
+    getjhj() {
+      var spkc = {
+        spbh: this.listrow.spbh,
+        sl: this.listrow.sl,
+        pch: this.formline.pch,
+      }
+      request({ url: 'mall/spkc/getspkc.do', method: 'post', data: spkc }).then((response) => {
+        debugger;
+        this.formline.jhj = response.list[0].jhjg / 100;
+      }).catch((error) => {
+        Message.error("error：" + "请检查网络是否连接");
+      })
+
+    },
+    thload(zt, shzt) { ///////////////退单
+      if (shzt == 1) {
+        this.listrow.zje = this.listrow.zje * 100;
+        this.listrow.shzt = '1';
+        var dd = this.listrow;
+      } else {
+        var dd = {
+          zt: zt,
+          shzt: shzt,
+          ddh: this.listrow.ddh,
+          spbh: this.listrow.spbh,
+          sl: this.listrow.sl
+        };
+      }
+      request({ url: 'mall/dd/updateddbytd.do', method: 'post', data: dd }).then((response) => {
+        var type;
+        if (response.code == "1") {
+          type = 'success';
+        } else {
+          type = 'warning';
+        }
+        this.$message({ message: response.msg, type: type });
+        // this.initialize();
+        this.ADSubmit();
+      }).catch((error) => {
+        this.$message({ message: '未知错误,请联系管理员', type: 'error' });
+        this.ADSubmit();
+      });
+    },
+    submitUpload() { ////////////////发货
+      var dd = {
+        zt: this.listrow.zt,
+        ddh: this.listrow.ddh,
+        spbh: this.listrow.spbh,
+        sl: this.listrow.sl,
+        pch: this.formline.pch,
+        spmc: this.listrow.spmc
+      };
+      request({ url: 'mall/dd/updateddbyfh.do', method: 'post', data: dd }).then((response) => {
+        var type;
+        if (response.code == "1") {
+          type = 'success';
+        } else {
+          type = 'warning';
+        }
+        this.$message({ message: response.msg, type: type });
+        this.dialogVisible = false;
+        this.ADSubmit();
+      }).catch((error) => {
+        Message.error("error：" + "请检查网络是否连接");
+      })
+    },
+    initialize() { ////////////////////////进入初始化
+      this.tableData1 = [];
+      this.tableData1.push(this.listrow);
+      console.log("-------" + this.tableData1);
+      this.mdlist = this.listrow;
+    },
+    moneyData(money) { //不能用过滤器，很难受 金额
+      return (money / 100).toFixed(2)
+    },
+    zffsData(zffs) {
+      if (zffs == 1) {
+        return '微信公众号';
+      } else if (zffs == 2) {
+        return '微信App'
+      } else if (zffs == 3) {
+        return '支付宝App'
+      } else {
+        return '会员余额'
       }
     },
-  },
-  ADSubmit() { //发送参数到父组件 事件名，参数
-    this.onceover = true;
-    this.$emit("dialog1Changed", 0);
+    ADSubmit() { //发送参数到父组件 事件名，参数
+      this.$emit("dialog1Changed", 0);
+    },
   },
 }
 
@@ -140,7 +252,7 @@ div.img {
   top: 72px;
   right: 30px;
   width: 250px;
-  height: 202px;
+  /*height: 202px;*/
 }
 
 div.el-card__body {
@@ -158,9 +270,7 @@ div.sp {
   left: -10px
 }
 
-div.md .el-button--medium {
-  padding: 4px 5px;
-}
+
 
 div.md {
   width: 100%;
@@ -178,6 +288,22 @@ div.md .mdList {
 
 div.md div.mdLeft {
   margin-left: 5%;
+}
+
+.bombtn .btn {
+  padding: 10px 25px;
+  font-size: 12px;
+  margin: 5px 20px;
+}
+
+.bombtn {
+  position: relative;
+  top: 0;
+  right: -300px;
+}
+
+.formsty {
+  padding-top: 20px;
 }
 
 </style>

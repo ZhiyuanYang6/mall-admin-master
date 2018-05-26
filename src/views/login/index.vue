@@ -71,9 +71,9 @@ export default {
       this.$refs.loginForm.validate(valid => { //表单验证成功则返回true
         if (valid) {
           this.loading = true;
-          this.$store.dispatch('LoginByUsername', this.loginForm).then(() => {
-            this.loading = false
-            this.$router.push({ path: '/' })
+          this.$store.dispatch('LoginByUsername', this.loginForm).then((response) => {
+            this.loading = false;
+            this.$router.push({ path: '/' });
           }).catch(() => {
             this.loading = false
           })

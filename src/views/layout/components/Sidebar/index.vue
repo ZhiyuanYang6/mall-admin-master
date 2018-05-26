@@ -1,7 +1,7 @@
 <template>
   <scroll-bar>
     <el-menu mode="vertical" unique-opened :default-active="$route.path" :collapse="isCollapse" background-color="#8E9892" text-color="#ffffffad" active-text-color="#fff7a4">
-      <sidebar-item :routes="routes"></sidebar-item>
+      <sidebar-item :routes="permission_routers"></sidebar-item>
     </el-menu>
   </scroll-bar>
 </template>
@@ -14,6 +14,7 @@ export default {
   components: { SidebarItem, ScrollBar },
   computed: {
     ...mapGetters([
+      'permission_routers',
       'sidebar'
     ]),
     routes() {
@@ -26,3 +27,9 @@ export default {
 }
 
 </script>
+<style scoped>
+.el-menu {
+  margin-bottom: 100px;
+}
+
+</style>

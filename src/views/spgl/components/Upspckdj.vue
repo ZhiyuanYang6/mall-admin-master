@@ -1,20 +1,19 @@
 <template>
-  <div @mouseover="Moveradd()">
+  <div>
     <el-form label-position="left" ref="formline" :model="formline" status-icon :rules="rules2" size="small" label-width="80px" :inline="true">
-      <el-form-item label="商品" prop="spbh">
-        <el-select style="width:250px" v-model="formline.spbh" filterable placeholder="请选择" @change="querykcbyspbh()">
-          <el-option v-for="item in splist" :key="item.spmc" :label="item.spmc" :value="item.spbh">
+      <el-form-item label="商品" prop="goods">
+        <el-select style="width:250px" v-model="formline.sprow" filterable placeholder="请选择" @change="querykcbyspbh">
+          <el-option v-for="item in splist" :key="item.spmc" :label="item.spmc" :value="item">
           </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="批次号" prop="pch">
         <el-select style="width:250px" v-model="formline.pch" filterable placeholder="请选择" @change="querykcbyspbh()">
-          <el-option v-for="item in splist" :key="item.pch" :label="item.pch" :value="item.pch">
+          <el-option v-for="item in pclist" :key="item.pch" :label="item.pch" :value="item.pch">
           </el-option>
         </el-select>
-        <!-- <span>{{vkcsl}}</span> -->
       </el-form-item>
-      <el-form-item label="类型" prop="djr">
+      <el-form-item label="类型" prop="lx">
         <el-select style="width:250px" v-model="formline.lx" filterable placeholder="请选择">
           <el-option v-for="item in options1" :key="item.value" :label="item.lx" :value="item.value">
           </el-option>
@@ -41,26 +40,13 @@ import request from '@/utils/request'
 export default {
   props: ['listrow', "uploadimagehas", "splist"],
   data() {
-    var validspbh = (rule, value, callback) => {
+    var validgoods = (rule, value, callback) => {
       if (!value) {
-        return callback(new Error('商品编号不能为空'));
+        return callback(new Error('内容不能为空'));
       } else {
         value = value.replace(/(^\s*)|(\s*$)/g, ''); //去首尾空格
         if (!value) {
-          return callback(new Error('商品编号不能为空'));
-        }
-      }
-      setTimeout(() => {
-        callback();
-      }, 500);
-    };
-    var validpch = (rule, value, callback) => {
-      if (!value) {
-        return callback(new Error('批次号不能为空'));
-      } else {
-        value = value.replace(/(^\s*)|(\s*$)/g, ''); //去首尾空格
-        if (!value) {
-          return callback(new Error('批次号不能为空'));
+          return callback(new Error('内容不能为空'));
         }
       }
       setTimeout(() => {
@@ -68,13 +54,16 @@ export default {
       }, 500);
     };
     var validnum = (rule, value, callback) => {
+      if (!value) {
+        return callback(new Error('发货数量不能为空'));
+      }
       if (value) {
         setTimeout(() => {
           if (!Number.isInteger(value) && typeof value !== "number") {
             callback(new Error('请输入数字值'));
           } else {
             if (this.vkcsl < value) {
-              callback(new Error('数量不能超过库存'));
+              callback(new Error('发货数量不能超过库存,当前库存数(' + this.vkcsl + ")"));
             }
             callback();
           }
@@ -91,8 +80,8 @@ export default {
         lx: '',
       },
       rules2: {
-        spbh: [{ validator: validspbh, trigger: 'blur' }],
-        pch: [{ validator: validpch, trigger: 'blur' }],
+        spbh: [{ validator: validgoods, trigger: 'blur' }],
+        pch: [{ validator: validgoods, trigger: 'blur' }],
         sl: [{ validator: validnum, trigger: 'blur' }],
       },
       options1: [ //分类表
@@ -103,31 +92,19 @@ export default {
       restaurants: [], //全部商品
       timeout: null, //搜索商品定时器
       onceover: true,
-      vkcsl: 10,
+      vkcsl: 0,
+      pclist: []
     };
   },
   created: function() {
-    // this.onloadtable1();
-  },
-  onloadtable1(val) { //查询所有库存大于0的商品
-    var data = {
-      spbh: formline.spbh,
-      pch: formline.pch
-    }
-    request({ url: 'mall/spkc/getspkc.do', method: 'post', data: data })
-      .then((response) => {
-        debugger;
-        // console.log(response.data.data);
-        this.splist = response.list;
-      })
-      .catch((error) => {
-        Message.error("error：" + "请检查网络是否连接");
-      })
+    this.initialize();
+    // this.onloadtable();
   },
   watch: {
     uploadimagehas: function(data, olddata) {
       if (data) {
-        this.onceover = data;
+        this.$refs["formline"].resetFields();
+        this.initialize();
       }
     }
   },
@@ -139,13 +116,21 @@ export default {
             this.$store.dispatch('timeFormatty', this.formline);
             this.formline.jhsj = this.formline.sj[1];
           }
-          // console.log(this.formline)
           if (this.listrow.btn == "添加") {
-            var url = "addspkc.do";
+            var url = "addckxq.do";
           } else {
-            var url = "updatespkc.do";
+            var url = "updateckxq.do";
           }
-          request({ url: 'mall/spkc/' + url, method: 'post', data: this.formline })
+          console.info(this.formline);
+          var data = {
+            spbh: this.formline.goods.spbh,
+            spmc: this.formline.goods.spmc,
+            pch: this.formline.pch,
+            lx: this.formline.lx,
+            sl: this.formline.sl,
+            bz: this.formline.bz
+          }
+          request({ url: 'mall/ckxq/' + url, method: 'post', data: data })
             .then(response => {
               this.ADSubmit();
             })
@@ -166,38 +151,39 @@ export default {
       this.onceover = true;
       this.$emit("dialog1Changed", 0); //发送参数到父组件 事件名，参数
     },
-    Moveradd() { ////////////////////////进入初始化
-      if (this.onceover) {
-        if (this.listrow.btn == "添加") {
-          this.formline.sj = ['', '']; //修复时间不重置
-          this.$refs["formline"].resetFields();
-        } else {
-          this.formline = {
-            spbh: this.listrow.spbh,
-            pch: this.listrow.pch,
-            lx: this.listrow.lx,
-            sl: this.listrow.sl ? this.listrow.sl - 0 : 0,
-            bz: this.listrow.bz,
-            spmc: this.listrow.spmc,
-          }
-          // console.log(this.listrow)
+    initialize() { ////////////////////////进入初始化
+      if (this.listrow.btn == "添加") {
+        this.formline = { sprow: '', goods: '', pch: '', lx: '', sl: '', bz: '', spmc: '', sj: ['', ''] };
+      } else {
+        this.formline = {
+          goods: this.listrow.spmc,
+          pch: this.listrow.pch,
+          lx: this.listrow.lx,
+          sl: this.listrow.sl ? this.listrow.sl - 0 : 0,
+          bz: this.listrow.bz,
+          spmc: this.listrow.spmc,
         }
-        this.onceover = false;
       }
     },
-    querykcbyspbh() {
-      this.searchmain("", this.formline.spbh);
+    querykcbyspbh(row) {
+      if (!!row) { this.formline.pch = ""; };
+      // console.log(row);
+      // console.log(this.formline.sprow)
+      this.formline.sprow = row ? row.spmc : this.formline.sprow;
+      this.formline.spbh = row ? row.spbh : this.formline.spbh;
+      var data = {
+        spbh: this.formline.spbh,
+        pch: this.formline.pch
+      };
+      request({ url: 'mall/spkc/getspkc.do', method: 'post', data: data }).then((response) => {
+        this.pclist = response.list;
+        if (this.pch != "") {
+          this.vkcsl = response.list[0].sl;
+        }
+      }).catch((error) => {
+        Message.error("error：" + "请检查网络是否连接");
+      })
     },
-    searchmain(url, val) {
-      console.log("改变了")
-      // request({ url: url, method: 'post', data: val })
-      // .then(response => {
-      if (this.vkcsl == 10) { this.vkcsl = 20 }
-      // })
-      // .catch(error => {
-      // Message.error("error：" + "请检查网络是否连接");
-      // })
-    }
   }
 }
 

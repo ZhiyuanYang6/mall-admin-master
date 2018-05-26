@@ -14,13 +14,13 @@ export const constantRouterMap = [
   {
     path: '',
     component: Layout,
-    redirect: 'dashboard',
-    children: [{
-      path: 'dashboard',
-      component: _import('dashboard/index'),
-      name: 'dashboard',
-      meta: { title: '首页', icon: 'icon-danweiguanli', noCache: true } //
-    }]
+    // redirect: 'dashboard',
+    // children: [{
+    // path: 'dashboard',
+    // component: _import('dashboard/index'),
+    // name: 'dashboard',
+    // meta: { title: '首页', icon: 'icon-danweiguanli', noCache: true } //
+    // }]
   },
   //商品管理
   {
@@ -49,7 +49,7 @@ export const constantRouterMap = [
       { path: 'ggscgl', component: _import('scgl/ggscgl'), name: 'ggscgl', meta: { noCache: false, title: '广告素材管理', icon: 'example' } },
       { path: 'ggfb', component: _import('scgl/ggfb'), name: 'ggfb', meta: { noCache: false, title: '广告发布', icon: 'example' } },
       { path: 'spsxj', component: _import('scgl/spsxj'), name: 'spsxj', meta: { noCache: false, title: '商品上下架', icon: 'example' } },
-      { path: 'qtsz', component: _import('scgl/qtsz'), name: 'qtsz', meta: { noCache: false, title: '其他设置', icon: 'example' } },
+      // { path: 'qtsz', component: _import('scgl/qtsz'), name: 'qtsz', meta: { noCache: false, title: '其他设置', icon: 'example' } },
     ]
   },
   //营销活动
@@ -77,30 +77,42 @@ export const constantRouterMap = [
       { path: 'tkgl', component: _import('jygl/tkgl'), name: 'tkgl', meta: { noCache: false, title: '退款管理', icon: 'example' } }
     ]
   },
-
-  //统计分析
+  //权限管理
   {
-    path: '/统计分析',
+    path: '/qxgl',
+    name: 'qxgl',
     component: Layout,
-    children: [{
-      path: 'index',
-      name: 'tjfx',
-      component: _import('tjfx/index'),
-      meta: { noCache: false, title: '统计分析', icon: 'icon-licaitongjibiao' }
-    }]
-  },
-  //系统管理
-  {
-    path: '/xtgl',
-    name: 'xtgl',
-    component: Layout,
-    redirect: '/xtgl/yhgl',
-    meta: { noCache: false, title: '系统管理', icon: 'icon-xitongguanli' },
+    redirect: '/qxgl/yhxxgl',
+    meta: { noCache: false, title: '权限管理', icon: 'icon-caiwuguanli' },
     children: [
-      { path: 'yhgl', name: 'yhgl', component: _import('xtgl/yhgl'), meta: { noCache: false, title: '用户管理', icon: 'icon-xitongguanli' } },
-      { path: 'jsgl', component: _import('xtgl/jsgl'), name: 'jsgl', meta: { noCache: false, title: '角色管理', icon: 'example' } }
+      { path: 'yhxxgl', component: _import('qxgl/yhxxgl'), name: 'yhxxgl', meta: { noCache: false, title: '用户信息管理', icon: 'example' } },
+      { path: 'qxsz', component: _import('qxgl/qxsz'), name: 'qxsz', meta: { noCache: false, title: '权限設置', icon: 'example' } },
+      { path: 'zygl', component: _import('qxgl/zygl'), name: 'zygl', meta: { noCache: false, title: '资源管理', icon: 'example' } },
     ]
   },
+  //统计分析
+  // {
+  //   path: '/统计分析',
+  //   component: Layout,
+  //   children: [{
+  //     path: 'index',
+  //     name: 'tjfx',
+  //     component: _import('tjfx/index'),
+  //     meta: { noCache: false, title: '统计分析', icon: 'icon-licaitongjibiao' }
+  //   }]
+  // },
+  //系统管理
+  // {
+  //   path: '/xtgl',
+  //   name: 'xtgl',
+  //   component: Layout,
+  //   redirect: '/xtgl/yhgl',
+  //   meta: { noCache: false, title: '系统管理', icon: 'icon-xitongguanli' },
+  //   children: [
+  //     { path: 'yhgl', name: 'yhgl', component: _import('xtgl/yhgl'), meta: { noCache: false, title: '用户管理', icon: 'icon-xitongguanli' } },
+  //     { path: 'jsgl', component: _import('xtgl/jsgl'), name: 'jsgl', meta: { noCache: false, title: '角色管理', icon: 'example' } }
+  //   ]
+  // },
 
 
   //登陆界面

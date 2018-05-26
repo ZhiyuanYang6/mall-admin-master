@@ -8,7 +8,7 @@
         <el-input v-model="formline.spmc" style="width:250px;"></el-input>
       </el-form-item>
       <el-form-item label="商品售价" prop="spsj">
-        <el-input v-model.number="formline.spsj" style="width:242px;"></el-input><i class="iconfont icon-renminbi"></i>
+        <el-input v-model.number="formline.spsj" style="width:235px;"></el-input><i class="iconfont icon-renminbi"></i>
       </el-form-item>
       <el-form-item label="分类品牌" prop="flid">
         <el-cascader placeholder="请选择品牌类型" ref="options1" style="width:250px;" :options="options1" v-model="formline.flid" :show-all-levels="false" clearable> </el-cascader>
@@ -94,8 +94,8 @@ export default {
           callback(new Error('请输入数字值'));
 
         } else {
-          if (value <= 0) {
-            callback(new Error('商品必须大于0'));
+          if (value <= 0.01) {
+            callback(new Error('商品价格必须大于1分'));
           }
           callback();
         }
@@ -137,6 +137,11 @@ export default {
       upmaxxh: [], //上传的序号
     };
 
+  },
+  computed: {
+    imgurl() {
+      return this.$store.state.user.urlImg;
+    }
   },
   mounted: function() {
     upimage.style.height = "140px";
@@ -259,13 +264,13 @@ export default {
       }
     },
     subimage(file, index, xh, length) { //提交表单
-      console.log(this.formline);
-      console.log(this.fileimg);
+      debugger;
       var formdata1 = new FormData();
+      // this.formline.spsj = this.formline.spsj * 100;
       formdata1.append('file', file);
       formdata1.append('xh', xh);
       formdata1.append('spbh', this.formline.spbh);
-      formdata1.append('spsj', this.formline.spsj);
+      formdata1.append('spsj', this.formline.spsj * 100);
       formdata1.append('spmc', this.formline.spmc);
       formdata1.append('remark', this.formline.remark);
       formdata1.append('flId', this.formline.flid[1] ? this.formline.flid[1] : '');
@@ -294,7 +299,7 @@ export default {
         this.options1 = this.listrow.options1; //品牌类别
         this.formline.remark = this.listrow.remark; //商品备注
 
-        this.formline.spsj = this.listrow.spsj ? ((this.listrow.spsj - 0) * 100).toFixed() - 0 : 0; //(parseFloat(this.listrow.spsj) * 100).toFixed(); //商品售价
+        this.formline.spsj = this.listrow.spsj ? (this.listrow.spsj) - 0 : 0; //(parseFloat(this.listrow.spsj) * 100).toFixed(); //商品售价
         this.fileimg = []; //商品详情图初始化
         this.detilzt = []; //商品详情图初始化
         this.detiltp = []; //商品主图初始化
@@ -307,7 +312,7 @@ export default {
           for (var i = 0; i < this.listrow.xqtpurl.length; i++) { //添加展示的详情图
             var src = this.listrow.xqtpurl[i].split(",")[0];
             var xh = this.listrow.xqtpurl[i].split(",")[1];
-            var itemxqimg = { "src": "http://192.168.1.123:8088" + src, "xh": xh };
+            var itemxqimg = { "src": this.imgurl + src, "xh": xh };
             this.detiltp.push(itemxqimg);
             this.xhadd.push(xh);
             this.fileimg.push(itemxqimg); //添加上传的详情图
@@ -342,7 +347,7 @@ export default {
       formdata1.append('file', file);
       formdata1.append('xh', xh);
       formdata1.append('spbh', this.formline.spbh);
-      formdata1.append('spsj', this.formline.spsj);
+      formdata1.append('spsj', this.formline.spsj * 100);
       formdata1.append('spmc', this.formline.spmc);
       formdata1.append('remark', this.formline.remark);
       formdata1.append('flId', this.formline.flid[1] ? this.formline.flid[1] : '');
@@ -370,6 +375,27 @@ export default {
 hr {
   margin-top: 5px;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

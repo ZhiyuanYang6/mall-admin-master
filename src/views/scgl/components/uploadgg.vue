@@ -1,118 +1,161 @@
 <template>
-  <div class="smain" @mouseover="Moveradd()">
+  <div class="smain">
     <el-form ref="formline" :model="formline" status-icon :rules="rules2" size="small" label-width="90px" :inline="true">
-      <el-form-item label="广告编号" prop="ggid">
-        <el-input v-model="formline.ggid" style="width:250px;"></el-input>
-      </el-form-item>
-      <el-form-item label="广告名称" prop="ggmc">
-        <el-input v-model="formline.ggmc" style="width:250px;"></el-input>
-      </el-form-item>
-      <el-form-item label="广告位编号" prop="ggwid">
-        <el-input v-model="formline.ggwid" style="width:250px;"></el-input>
+      <el-form-item label="广告名称" prop="ggid">
+        <el-select style="width:250px" v-model="formline.ggid" filterable placeholder="请选择" @change="imgxr">
+          <el-option v-for="item in gglist" :key="item.ggmc" :label="item.ggmc" :value="item.id">
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item label="广告位名称" prop="ggwmc">
         <el-input v-model="formline.ggwmc" style="width:250px;"></el-input>
       </el-form-item>
-      <el-form-item label="时间" prop="sj">
-        <el-input v-model="formline.sj" style="width:250px;"></el-input>
+      <el-form-item label="广告位类型" prop="ggwlx">
+        <el-input v-model="formline.ggwlx" style="width:250px;"></el-input>
+      </el-form-item>
+      <el-form-item label="广告位组别" prop="ggwzb">
+        <el-input v-model="formline.ggwzb" style="width:250px;"></el-input>
+      </el-form-item>
+      <el-form-item label="播放日期">
+        <el-date-picker style="width:605px" v-model="formline.sj" type="daterange" align="right" unlink-panels range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期">
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="播放时间">
+        <template>
+          <el-time-select style="width:300px" placeholder="起始时间" v-model="formline.startTime" :picker-options="{   start: '08:30',   step: '00:15',   end: '18:30' }">
+          </el-time-select>
+          <el-time-select style="width:300px" placeholder="结束时间" v-model="formline.endTime" :picker-options="{  start: '08:30',  step: '00:15',  end: '18:30',  minTime: startTime}">
+          </el-time-select>
+        </template>
+      </el-form-item>
+      <el-form-item label="备注" prop="ggwbz">
+        <el-input type="textarea" :rows=5 style="width:605px" v-model="formline.ggwbz"></el-input>
+      </el-form-item>
+      <el-form-item label="广告图">
+        <div class="imglabe">
+          <div class="box">
+            <input id="slt" type="file" ref="inputerzt" />
+            <label for="slt"></label>
+            <img :src="formline.ggurl" :class="{'ztimg':true,'ztimgshow':listrow.showzt}" />
+            <i class="el-icon-plus"></i>
+          </div>
+        </div>
       </el-form-item>
     </el-form>
-    <span>广告图</span>
-    <hr>
-    <input id="zt" type="file" @change="handleFileChange('zt')" ref="inputerzt" />
-    <!-- 添加按钮 -->
-    <div class="imgdiv">
-      <div class="box">
-        <label for="zt"></label>
-        <i class="el-icon-plus"></i>
-      </div>
-      <!-- 展现的base64图片 -->
-      <!-- <div> -->
-      <!-- <img :src="detilzt.src" :class="{'ztimg':true,'ztimgshow':listrow.showzt}" /> -->
-      <!-- <div class="tpmc"> -->
-      <!-- <p>{{detilzt.name}}</p> -->
-      <!-- </div> -->
-      <!-- </div> -->
-      <div class="tpbtn">
-        <span style="margin-left:-100px">只能上传jpg/png文件，且不超过500kb。</span>
-        <el-button style="float: right;margin-right:50px" size="small" type="success" @click="submitUpload('formline')">{{listrow.btn}}</el-button>
-      </div>
+    <!-- 发布按钮 -->
+    <div class="tpbtn">
+      <el-button style="float: right;margin-right:50px" size="small" type="success" @click="submitUpload()">{{listrow.btn}}</el-button>
     </div>
   </div>
 </template>
 <script>
+import request from '@/utils/request'
 export default {
-  props: ['listrow', "uploadimagehas"],
+  props: ['listrow', "uploadimagehas", "gglist"],
   data() {
-    var validsfk = (rule, value, callback) => {
-      if (!value) {
-        return callback(new Error('商品编号不能为空'));
-      } else {
-        value = value.replace(/(^\s*)|(\s*$)/g, ''); //去首尾空格
-        if (!value) {
-          return callback(new Error('商品编号不能为空'));
-        }
-      }
-      setTimeout(() => {
-        callback();
-      }, 400);
-    };
+
     return {
       formline: {
-        endDate: "结束时间",
+        endDate: "",
         ggid: "",
+        ggwid: '',
         ggmc: "",
-        ggurl: "广告图片",
+        ggurl: "",
         ggwid: "",
+        ggwzb: '',
         ggwmc: "",
-        startDate: "开始日期",
+        ggwbz: '',
+        ggwlx: '',
+        sj: ['', ''],
+        // startDate: "",
+        // endDate: "",
+        startTime: '',
+        endTime: '',
         sj: "",
+        startdate: '',
+        enddate: ''
       },
       rules2: {
-        ggid: [{ validator: validsfk, trigger: 'blur' }],
-        ggmc: [{ validator: validsfk, trigger: 'blur' }],
-        ggwid: [{ validator: validsfk, trigger: 'blur' }],
-        ggwmc: [{ validator: validsfk, trigger: 'blur' }],
-        sj: [{ validator: validsfk, trigger: 'blur' }],
+
       },
-      onceover: false,
+      startTime: '',
+      endTime: '',
     }
   },
-  created: function() { //创建组件初始化
-    this.onceover = true;
+  created: function() {
+    this.initialize();
   },
   watch: {
     uploadimagehas: function(data, olddata) {
       if (data) {
-        // debugger;
-        console.log("uploadimagehas：" + data)
-        this.onceover = data;
+        // this.$refs["formline"].resetFields();
+        this.initialize();
       }
     }
   },
   methods: {
-    Moveradd() { ////////////////////////创建后进入组件初始化
-      if (this.onceover) {
-        this.onceover = false;
-        console.log(this.listrow)
+    imgxr(val) {
+      let imgurl = this.gglist.find(item => { return item.id == val; })
+      this.formline.ggurl = this.$store.state.user.urlImg + imgurl.ggurl;
+      this.listrow.showzt = true;
+    },
+    submitUpload() { //表单提交
+      var url;
+      if (this.listrow.btn == "修改") {
+        url = "mall/ggw/updateggw.do";
+      } else {
+        url = "mall/ggw/addggw.do";
+      }
+      this.formline.startdate = this.formline.sj[0];
+      this.formline.enddate = this.formline.sj[1];
+      this.formline.ggwbz = this.formline.ggwbz ? this.formline.ggwbz : '';
+      this.formline.ggwlx = this.formline.ggwlx ? this.formline.ggwlx : '';
+      request({ url: url, method: 'post', data: this.formline }).then(response => {
+        var type;
+        if (response.code == "1") {
+          type = 'success';
+        } else {
+          type = 'warning';
+        }
+        this.$message({ message: response.msg, type: type });
+        this.ADSubmit(); //返回父组件
+        return;
+      }).catch(error => {
+        Message.error("error：" + "请检查网络是否连接");
+      })
+    },
+    ADSubmit() { //发送参数到父组件 事件名，参数
+      this.$emit("dialog1Changed", 0);
+    },
+    initialize() { ////////////////////////进入初始化
+      if (this.listrow.btn == "发布") {
+        this.formline = { endDate: "", ggid: "", ggmc: "", ggurl: "", ggwid: "", ggwmc: "", sj: ['', ''], startTime: '', endTime: '', sj: "", };
+        this.listrow.showzt = false;
+      } else {
+        this.formline = {
+          ggid: this.listrow.ggid,
+          ggwmc: this.listrow.ggwmc,
+          ggwzb: this.listrow.ggwzb,
+          ggwbz: this.listrow.ggwbz,
+          ggwlx: this.listrow.ggwlx,
+          startTime: this.listrow.startTime,
+          endTime: this.listrow.endTime,
+          ggurl: this.listrow.ggurl,
+          ggwid: this.listrow.ggwid,
+          sj: [this.listrow.startDate, this.listrow.endDate]
+        }
+        this.listrow.showzt = true;
+
       }
     },
-  },
-  ADSubmit() { //发送参数到父组件 事件名，参数
-    this.onceover = true;
-    this.$emit("dialog1Changed", 0);
   },
 }
 
 </script>
 <style scoped>
-.imgdiv {
-  height: 150px;
-}
-
 .tpbtn {
   position: relative;
-  top: 120px;
+  top: -40px;
 }
 
 input {
@@ -122,35 +165,26 @@ input {
 
 .ztimg {
   position: absolute;
-  transition: opacity 2s, top 1s;
   opacity: 0;
-  top: 0px;
-  width: 100px;
-  height: 100px;
+  top: -60px;
+  left: -2px;
+  width: 121px;
+  height: 121px;
   border: 1px solid #f0f0f0;
   border-radius: 6px;
+  z-index: 10;
+  /*transition: opacity 2s, top 1s;*/
 }
 
 div img.ztimgshow {
   opacity: 1;
-  top: 65px;
-}
-
-.ztsz {
-  position: relative;
-  height: 180px;
-}
-
-div.tpmc {
-  position: relative;
-  top: 40px;
-  left: 150px;
+  top: -1px;
 }
 
 .box {
   position: relative;
   float: left;
-  width: 100px;
+  width: 120px;
   height: 120px;
   border: 1px dashed #C0CCDA;
   border-radius: 5px;
@@ -164,20 +198,7 @@ div.box i {
   transform: translate(-50%, -50%);
   font-size: 28px;
   color: #8c939d;
-}
-
-.upimage .box:hover {
-  border: 1px dashed #409EFF;
-}
-
-label {
-  cursor: pointer;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10;
+  z-index: 1;
 }
 
 </style>

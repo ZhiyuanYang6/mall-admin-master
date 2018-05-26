@@ -14,10 +14,11 @@
         <el-button type="warning" @click="uploadimag('','add')">添加</el-button>
       </el-form-item>
       <el-form-item>
-        <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
-          <el-radio-button label="">显示历史</el-radio-button>
+        <el-switch v-model="formInline.radio" active-text="历史记录" @change="onloadtable1"></el-switch>
+        <!--  <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
           <el-radio-button label="1">关闭历史</el-radio-button>
-        </el-radio-group>
+          <el-radio-button label="">显示历史</el-radio-button>
+        </el-radio-group> -->
       </el-form-item>
     </el-form>
     <!-- 表格 -->
@@ -39,9 +40,10 @@
         <el-table-column prop="sl" label="库存" align="center"> </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <el-button type="text" size="mini" @click="uploadimag(scope.row)">修改</el-button>
-            <el-button type="text" v-if="scope.row.zt!=='1'" size="mini" @click="delclick(scope.row,1,'恢复')">恢复</el-button>
-            <el-button type="text" v-else size="mini" @click="delclick(scope.row,0,'删除')">删除</el-button>
+            <span v-if="scope.row.zt=='0'">已删除</span>
+            <el-button type="text" size="mini" v-if="scope.row.zt=='1'" @click="uploadimag(scope.row)">修改</el-button>
+            <!-- <el-button type="text" v-if="scope.row.zt!=='1'" size="mini" @click="delclick(scope.row,1,'恢复')">恢复</el-button> -->
+            <el-button type="text" size="mini" v-if="scope.row.zt=='1'" @click="delclick(scope.row,0,'删除')">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -68,7 +70,7 @@ export default {
       formInline: {
         bhmc: '',
         flid: [],
-        radio: '',
+        radio: false,
       },
       listQuery: {
         pageSize: 10, //默认每页的数据量
@@ -120,7 +122,7 @@ export default {
         pageSize: this.listQuery.pageSize,
         bhmc: this.formInline.bhmc,
         flid: this.formInline.flid[1] ? this.formInline.flid[1] : '',
-        zt: this.formInline.radio,
+        zt: this.formInline.radio ? '' : 1,
       };
       // console.log(searchckxqData);
       request({ url: 'mall/spkc/searchspkc.do', method: 'post', data: searchckxqData }).then(response => {

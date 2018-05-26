@@ -23,7 +23,7 @@
       <!-- @sort-change="sortChange" -->
       <el-table :data="tableData" @sort-change="sortChange" v-loading="loading" style="width:100%">
         <el-table-column type="index" width="50" label="序号" align="center"> </el-table-column>
-        <el-table-column prop="ddh" label="订单号" width="170px" align="center"> </el-table-column>
+        <!-- <el-table-column prop="ddh" label="订单号" width="170px" align="center"> </el-table-column> -->
         <el-table-column prop="tpurl" label="图片" align="center">
           <template slot-scope="scope">
             <img :src="scope.row.tpurl" alt="0" width="80px" height="80px">
@@ -37,16 +37,16 @@
         <el-table-column prop="sl" label="数量" align="center"> </el-table-column>
         <el-table-column prop="djr" label="登记人" align="center"> </el-table-column>
         <el-table-column prop="bz" label="说明" align="center"> </el-table-column>
-        <el-table-column label="操作" align="center">
+        <!--   <el-table-column label="操作" align="center">
           <template slot-scope="scope">
             <el-button type="text" size="mini" @click="zwktff">修改</el-button>
             <el-button type="text" size="mini" @click="zwktff">删除</el-button>
           </template>
-        </el-table-column>
+        </el-table-column> -->
       </el-table>
     </div>
     <el-dialog class="upimage" :title="row.title" :visible.sync="uploadimagehas" width="56%" style="padding-bottom: 5%;">
-      <Upspckdj :splist="splist" :listrow="row" :uploadimagehas="uploadimagehas" @dialog1Changed="childchanged($event)"></Upspckdj>
+      <Upspbsdj :splist="splist" :listrow="row" :uploadimagehas="uploadimagehas" @dialog1Changed="childchanged($event)"></Upspbsdj>
     </el-dialog>
     <!-- 分页 -->
     <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.currentPage" :page-sizes="[10, 30, 50, 100]" :page-size="listQuery.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="listQuery.totalCount">
@@ -57,10 +57,10 @@
 import request from '@/utils/request'
 import axios from 'axios'
 import { Message } from 'element-ui'
-import Upspckdj from './components/Upspckdj'
+import Upspbsdj from './components/Upspbsdj'
 
 export default {
-  components: { Upspckdj },
+  components: { Upspbsdj },
   name: 'txmccx',
   data() {
     return {
@@ -90,7 +90,7 @@ export default {
     }
   },
   created: function() {
-    this.$store.dispatch('getNewDate', this.formInline);
+    // this.$store.dispatch('getNewDate', this.formInline);
     this.onloadtable1();
     this.onloadtable2();
     this.onloadtable3();
@@ -151,7 +151,7 @@ export default {
         })
     },
     onloadtable3(val) { //查询所有商品
-      request({ url: 'mall/spxx/getspbhmc.do', method: 'post', data: {} })
+      request({ url: 'mall/spkc/getspkc.do', method: 'post', data: {} })
         .then((response) => {
           // console.log(response.data.data);
           this.splist = response.list;
@@ -164,7 +164,7 @@ export default {
       if (this.formInline.sj) {
         this.$store.dispatch('timeFormat', this.formInline);
       } else {
-        this.$store.dispatch('getNewDate', this.formInline);
+        // this.$store.dispatch('getNewDate', this.formInline);
         this.formInline.startTime = "";
         this.formInline.endTime = "";
       }
@@ -195,8 +195,6 @@ export default {
       });
     },
     uploadimag(row, add) { // 添加、修改 库存
-      Message.warning("功能暂未开通");
-      return;
       if (add) {
         this.row = {};
         this.row.btn = "添加";

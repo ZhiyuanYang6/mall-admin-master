@@ -1,14 +1,16 @@
-import { LoginByUsername, logout } from '@/api/login' //, GetUserInfo,  
+import { LoginByUsername, logout, GetUserInfo } from '@/api/login' //, GetUserInfo,  
 import { getSession, setSession, removeSession } from '@/utils/auth'
+import request from '@/utils/request'
 
 const user = {
   state: {
     token: getSession(),
-    // urlImg: 'http://192.168.1.123:8088/',
-    urlImg: 'http://47.97.105.123:8080/',
+    // urlImg: 'http://192.168.1.123:8088',
+    urlImg: 'http://47.97.105.123:8080',
     name: '',
     avatar: '',
-    roles: []
+    roles: [],
+    routers: []
   },
 
   mutations: {
@@ -22,7 +24,8 @@ const user = {
       state.avatar = avatar
     },
     SET_ROLES: (state, roles) => {
-      state.roles = roles
+      state.roles = roles;
+      state.routers = roles;
     }
   },
   actions: {
@@ -32,10 +35,10 @@ const user = {
         LoginByUsername(username, userInfo.password).then(response => {
           const data = response.obj;
           setSession(data.token);
-          // debugger;
           commit('SET_TOKEN', data.token);
           commit('SET_NAME', data.login_name)
           resolve(response)
+
         }).catch(error => {
           reject(error)
         })
@@ -44,15 +47,26 @@ const user = {
     // 登出
     LogOut({ commit, state }) {
       return new Promise((resolve, reject) => {
-        logout(state.token).then(() => {
+        logout(state.token).then((routers) => {
           commit('SET_TOKEN', '')
-          // commit('SET_ROLES', [])
-          removeSession()
-          resolve()
+          commit('SET_ROLES', [])
+          removeSession();
+          resolve(routers);
         }).catch(error => {
           reject(error)
         })
       })
+    },
+    // 获取用户信息
+    GetUserInfo({ commit, state }) {
+      return new Promise((resolve, reject) => {
+        request({ url: 'mall/initMenu.do', method: 'post', data: {} }).then(response => {
+          commit('SET_ROLES', response);
+          resolve(response);
+        }).catch(error => {
+          reject(error);
+        });
+      });
     },
     // 前端 登出
     FedLogOut({ commit }) {

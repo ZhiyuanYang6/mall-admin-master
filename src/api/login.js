@@ -20,11 +20,10 @@ export function logout() {
     data
   })
 }
-
-// export function getUserInfo(token) {
-//   return request({
-//     url: '/user/info',
-//     method: 'get',
-//     params: { token }
-//   })
-// }
+export function getUserInfo(token) {
+  return request({
+    url: '/user/info',
+    method: 'get',
+    params: { token }
+  })
+}

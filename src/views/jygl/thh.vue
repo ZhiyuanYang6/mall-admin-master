@@ -6,24 +6,24 @@
         <el-date-picker v-model="formInline.sj" type="datetimerange" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00']">
         </el-date-picker>
       </el-form-item>
-      <el-form-item>
+      <!--  <el-form-item>
         <el-select v-model="formInline.pjdj" filterable placeholder="类型" style="width:150px;">
           <el-option v-for="item in opttxzt" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item>
         <el-input v-model="formInline.hybh" style="width: 200px;" placeholder="会员名称/电话"></el-input>
       </el-form-item>
       <!-- 右侧按钮 -->
       <el-form-item>
-        <el-button type="warning" @click="onloadtable1()">查询</el-button>
+        <el-select v-model="formInline.zt" filterable placeholder="请选择提现状态" style="width:150px;">
+          <el-option v-for="item in opttxzt" :key="item.value" :label="item.name" :value="item.code">
+          </el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
-        <el-radio-group v-model="formInline.radio" size="mini">
-          <el-radio-button label="0">显示历史</el-radio-button>
-          <el-radio-button label="1">关闭历史</el-radio-button>
-        </el-radio-group>
+        <el-button type="warning" @click="onloadtable1()">查询</el-button>
       </el-form-item>
     </el-form>
     <!-- 表格 -->
@@ -33,31 +33,42 @@
         <el-table-column prop="ddh" label="订单号" align="center"> </el-table-column>
         <el-table-column prop="spmc" label="宝贝标题" align="center"> </el-table-column>
         <el-table-column prop="loginName" label="买家" align="center"> </el-table-column>
-        <el-table-column prop="loginName" label="联系方式" align="center"> </el-table-column>
-        <el-table-column prop="pjdj" label="类型" align="center">
-          <template slot-scope="scope">
-            <span v-if="scope.row.pjdj=='0'">
+        <el-table-column prop="phone" label="联系方式" align="center"> </el-table-column>
+        <!-- <el-table-column prop="pjdj" label="类型" align="center">
+  <template slot-scope="scope">
+    <span v-if="scope.row.pjdj=='0'">
               好评
             </span>
-            <span v-if="scope.row.pjdj=='1'">
+    <span v-if="scope.row.pjdj=='1'">
               中评
             </span>
-            <span v-if="scope.row.pjdj=='2'">
+    <span v-if="scope.row.pjdj=='2'">
               差评
             </span>
-            <span v-else>
+    <span v-else>
             </span>
+  </template>
+</el-table-column>
+ -->
+        <el-table-column prop="tkyy" label="原因" align="center"> </el-table-column>
+        <!-- <el-table-column prop="tkje" label="退款金额" align="center"> </el-table-column> -->
+        <el-table-column prop="zt" label="状态" align="center">
+          <template slot-scope="scope">
+            <span v-if="scope.row.zt==='0'">
+             未审核
+            </span>
+            <span v-else-if="scope.row.zt==='1'">
+             审核通过
+            </span>
+            <span v-else>审核未通过</span>
           </template>
         </el-table-column>
-        <el-table-column prop="tkyy" label="原因" align="center"> </el-table-column>
-        <el-table-column prop="tkje" label="退款金额" align="center"> </el-table-column>
-        <el-table-column prop="zt" label="状态" align="center"> </el-table-column>
         <el-table-column prop="bz" label="备注" align="center"> </el-table-column>
         <el-table-column prop="shrid" label="客服" align="center"> </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <el-button type="text" size="mini" @click="th()">退货</el-button>
-            <el-button type="text" size="mini" @click="th()">换货</el-button>
+            <el-button type="text" size="mini" :disabled="scope.row.zt!=='0'" v-if="scope.row.fwlx==='0'" @click="th(scope.row,0,'退货')">退货</el-button>
+            <el-button type="text" size="mini" :disabled="scope.row.zt!=='0'" v-if="scope.row.fwlx==='1'" @click="th(scope.row,1,'换货')">换货</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -82,11 +93,8 @@
 <script>
 import request from '@/utils/request'
 import axios from 'axios'
-
 import { Message } from 'element-ui'
-
 export default {
-  name: 'txmccx',
   data() {
     return {
       dialog1: false,
@@ -97,15 +105,9 @@ export default {
         yhkh: '',
         sj: '',
         pjdj: '',
-        radio: '0'
+        zt: ''
       },
-      opttxzt: [
-        { value: '0', label: '好评' },
-        { value: '1', label: '中评' },
-        { value: '2', label: '差评' },
-        { value: '3', label: '中评改好评' },
-        { value: '4', label: '差评改好评' }
-      ],
+      opttxzt: [],
       listQuery: {
         pageSize: 10, //默认每页的数据量
         currentPage: 1, //当前页码
@@ -121,8 +123,9 @@ export default {
 
   },
   created: function() {
-    this.$store.dispatch('getNewDate', this.formInline);
+    // this.$store.dispatch('getNewDate', this.formInline);
     this.onloadtable1();
+    this.gettxzt();
   },
   methods: {
     Returns() {
@@ -154,6 +157,8 @@ export default {
         startTime: this.formInline.startTime,
         endTime: this.formInline.endTime,
         pjdj: this.formInline.pjdj,
+        fwlx: '1',
+        zt: this.formInline.zt,
       }
       console.log(txmxcxData);
       request({ url: 'mall/sh/searchsh.do', method: 'post', data: txmxcxData })
@@ -167,11 +172,20 @@ export default {
           Message.error("error：" + "请检查网络是否连接");
         })
     },
+    gettxzt() {
+      request({ url: 'mall/dic/getalldicbyparentcode.do', method: 'post', data: { parentCode: 6 } }).then((response) => {
+        this.loadbtn = false;
+        this.opttxzt = response.data;
+        console.log(this.optlx);
+      }).catch((err) => {
+        this.loading = false
+      })
+    },
     timeFormat() { //时间格式化yy-mm-dd hh:mm:ss
       if (this.formInline.sj) {
         this.$store.dispatch('timeFormat', this.formInline);
       } else {
-        this.$store.dispatch('getNewDate', this.formInline);
+        // this.$store.dispatch('getNewDate', this.formInline);
         this.formInline.startTime = "";
         this.formInline.endTime = "";
       }
@@ -179,9 +193,28 @@ export default {
     moneyData(money) { //不能用过滤器，很难受 金额
       return (money / 100).toFixed(2)
     },
-    th() {
-      Message.warning("功能暂未开通");
-      return;
+    th(row, has, zt) {
+      this.$confirm(zt + '?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        request({ url: 'mall/sh/thh.do', method: 'post', data: row }).then(response => {
+            var type;
+            if (response.code == "1") {
+              type = 'success';
+            } else {
+              type = 'warning';
+            }
+            this.$message({ message: response.msg, type: type });
+            this.onloadtable1(); //刷新数据
+          })
+          .catch((error) => {
+            Message.error("error：" + "请检查网络是否连接");
+          })
+      }).catch(() => {
+        this.$message({ type: 'info', message: '已取消' + zt });
+      });
     }
   }
 }

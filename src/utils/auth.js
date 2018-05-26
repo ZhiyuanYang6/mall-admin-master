@@ -5,7 +5,7 @@ export function setSession(token) {
 }
 
 export function removeSession() {
-  return sessionStorage.setItem(TokenKey, '')
+  return sessionStorage.removeItem(TokenKey);
 }
 
 export function getSession() {

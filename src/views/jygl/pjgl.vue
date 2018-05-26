@@ -89,7 +89,7 @@ export default {
 
   },
   created: function() {
-    this.$store.dispatch('getNewDate', this.formInline);
+    // this.$store.dispatch('getNewDate', this.formInline);
     this.onloadtable1();
   },
   methods: {
@@ -115,7 +115,7 @@ export default {
         orderBy: this.orderBy,
         pageNum: this.listQuery.pageNum,
         pageSize: this.listQuery.pageSize,
-        pjdj: this.formInline.yhkh,
+        pjdj: this.formInline.pjdj,
         startDate: this.formInline.startTime,
         endDate: this.formInline.endTime,
         memberPhone: this.formInline.txzt,
@@ -137,7 +137,7 @@ export default {
       if (this.formInline.sj) {
         this.$store.dispatch('timeFormat', this.formInline);
       } else {
-        this.$store.dispatch('getNewDate', this.formInline);
+        // this.$store.dispatch('getNewDate', this.formInline);
         this.formInline.startTime = "";
         this.formInline.endTime = "";
       }

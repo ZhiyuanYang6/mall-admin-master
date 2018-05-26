@@ -6,19 +6,20 @@
         <el-input v-model="formInline.ggmc" style="width: 200px;" placeholder="广告名称"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-date-picker v-model="formInline.sj" type="datetimerange" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00']" unlink-panels="false">
+        <el-date-picker v-model="formInline.sj" type="datetimerange" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00']">
         </el-date-picker>
       </el-form-item>
       <el-form-item>
-        <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
-          <el-radio-button label="">显示历史</el-radio-button>
+        <!--   <el-radio-group v-model="formInline.radio" size="mini" @change="onloadtable1">
           <el-radio-button label="1">关闭历史</el-radio-button>
-        </el-radio-group>
+          <el-radio-button label="">显示历史</el-radio-button>
+        </el-radio-group> -->
+        <el-switch v-model="formInline.radio" active-text="历史记录" @change="onloadtable1"></el-switch>
       </el-form-item>
       <!-- 右侧按钮 -->
       <el-form-item>
         <el-button type="warning" @click="onloadtable1()">查询</el-button>
-        <el-button type="warning" @click="updatagg()">添加</el-button>
+        <el-button type="warning" @click="updatagg('','add')">添加</el-button>
       </el-form-item>
     </el-form>
     <!-- 表格 -->
@@ -35,9 +36,10 @@
         <el-table-column prop="createTime" label="上传时间" align="center"> </el-table-column>
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
-            <el-button type="text" size="mini">修改</el-button>
-            <el-button type="text" size="mini" v-if="!scope.row.status" @click="delclick(scope.row,1, '恢复')">恢复</el-button>
-            <el-button type="text" size="mini" v-else @click="delclick(scope.row,0,'删除')">删除</el-button>
+            <!-- <el-button type="text" size="mini" v-if="!scope.row.status" @click="delclick(scope.row,1, '恢复')">恢复</el-button> -->
+            <span v-if="scope.row.status=='0'">已删除</span>
+            <el-button type="text" size="mini" v-if="scope.row.status=='1'" @click="updatagg(scope.row)">修改</el-button>
+            <el-button type="text" size="mini" v-if="scope.row.status=='1'" @click="delclick(scope.row,0,'删除')">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -45,22 +47,29 @@
     <!-- 分页 -->
     <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.currentPage" :page-sizes="[10, 30, 50, 100]" :page-size="listQuery.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="listQuery.totalCount">
     </el-pagination>
+    <!-- 修改，添加 弹框-->
+    <el-dialog :title="row.title" class="upimage" :visible.sync="showupdatadialog" width="57%" style="padding-bottom: 5%;">
+      <upggsc :listrow="row" :uploadimagehas="showupdatadialog" @dialog1Changed="childchanged($event)"></upggsc>
+    </el-dialog>
   </div>
 </template>
 <script>
 import request from '@/utils/request'
 import axios from 'axios'
 import { Message } from 'element-ui'
+import upggsc from './components/upggsc'
 
 export default {
   name: 'txmccx',
+  components: { upggsc },
   data() {
     return {
       formInline: {
         ggmc: '',
         sj: '',
         sele1: '',
-        radio: ''
+        radio: false,
+        ggwmc: '',
       },
       opttxzt: [
         { value: '0', label: '类型1' },
@@ -79,6 +88,8 @@ export default {
       }],
       orderBy: '',
       loading: false,
+      row: {},
+      showupdatadialog: false,
     }
 
   },
@@ -89,7 +100,7 @@ export default {
   },
 
   created: function() {
-    this.$store.dispatch('getNewDate', this.formInline);
+    // this.$store.dispatch('getNewDate', this.formInline);
     this.onloadtable1();
   },
   methods: {
@@ -116,7 +127,7 @@ export default {
         pageNum: this.listQuery.pageNum,
         pageSize: this.listQuery.pageSize,
         ggmc: this.formInline.ggmc,
-        status: this.formInline.radio,
+        status: this.formInline.radio ? '' : 1,
         startDate: this.formInline.startTime,
         endDate: this.formInline.endTime,
       }
@@ -125,7 +136,6 @@ export default {
         .then(response => {
 
           for (var i = 0; i < response.list.length; i++) {
-            debugger;
             response.list[i].ggurl = this.imgurl + response.list[i].ggurl;
           }
           this.loading = false;
@@ -141,7 +151,7 @@ export default {
       if (this.formInline.sj) {
         this.$store.dispatch('timeFormat', this.formInline);
       } else {
-        this.$store.dispatch('getNewDate', this.formInline);
+        // this.$store.dispatch('getNewDate', this.formInline);
         this.formInline.startTime = "";
         this.formInline.endTime = "";
       }
@@ -150,6 +160,7 @@ export default {
       return (money / 100).toFixed(2)
     },
     delclick(row, has, zt) { //删除商品
+      debugger;
       this.$confirm('是否' + zt + '该条广告信息, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -159,7 +170,7 @@ export default {
           id: row.id,
           status: has
         };
-        request({ url: 'mall/gg/updategg.do', method: 'post', data: delparam }).then((response) => {
+        request({ url: 'mall/gg/delgg.do', method: 'post', data: delparam }).then((response) => {
             this.$message({ type: 'success', message: zt + '成功!' });
             this.onloadtable1(); //刷新数据
           })
@@ -170,10 +181,11 @@ export default {
         this.$message({ type: 'info', message: '已取消' + zt });
       });
     },
+    childchanged(childdata) { //接收子组件参数
+      this.showupdatadialog = false;
+      this.onloadtable1();
+    },
     updatagg(row, add) { //添加或修改
-      Message.warning("功能暂未开通");
-      return;
-      // debugger;
       if (add == "add") { //添加
         this.row.title = "添加广告";
         this.row.btn = "添加";

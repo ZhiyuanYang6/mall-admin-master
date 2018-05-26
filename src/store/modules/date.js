@@ -63,8 +63,7 @@ const date = {
           }
         }
       }
-      data.treedata
- = data1;
+      data.treedata = data1;
     }
   },
 
